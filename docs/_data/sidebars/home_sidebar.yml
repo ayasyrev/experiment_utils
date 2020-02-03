@@ -10,8 +10,20 @@ entries:
       title: Overview
       url: /
     - output: web,pdf
-      title: experiment-utils
+      title: experiment
       url: /experiment
+    - output: web,pdf
+      title: utils
+      url: /utils
+    - output: web,pdf
+      title: consistency
+      url: /consistency
+    - output: web,pdf
+      title: data_imagenette
+      url: /data_imagenette
+    - output: web,pdf
+      title: ranger
+      url: /ranger
     output: web
     title: experiment_utils
   output: web

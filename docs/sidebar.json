@@ -1,6 +1,10 @@
 {
   "experiment_utils": {
     "Overview": "/",
-    "experiment-utils": "/experiment"
+    "experiment": "/experiment",
+    "utils": "/utils",
+    "consistency": "/consistency",
+    "data_imagenette": "/data_imagenette",
+    "ranger": "/ranger"
   }
 }

@@ -2,12 +2,31 @@
 
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
-index = {"ExperimentParameters": "00_experiment.ipynb",
+index = {"opt_dict": "00_experiment.ipynb",
+         "data_params": "00_experiment.ipynb",
+         "ExperimentParameters": "00_experiment.ipynb",
          "p": "00_experiment.ipynb",
+         "get_learner": "00_experiment.ipynb",
          "Experiment": "00_experiment.ipynb",
-         "e": "00_experiment.ipynb"}
+         "e": "00_experiment.ipynb",
+         "param_parser": "01_utils.ipynb",
+         "lr_f": "01_utils.ipynb",
+         "plot": "01_utils.ipynb",
+         "Learner.plot": "01_utils.ipynb",
+         "train": "01_utils.ipynb",
+         "Learner.train": "01_utils.ipynb",
+         "train_fc": "01_utils.ipynb",
+         "FCSchedLr": "01_utils.ipynb",
+         "FCSchedMom": "01_utils.ipynb",
+         "fc_lr_mom": "01_utils.ipynb",
+         "fc": "01_utils.ipynb",
+         "get_data": "03_data_imagenette.ipynb",
+         "Ranger": "50_ranger.ipynb"}
 
-modules = ["experiment.py"]
+modules = ["experiment.py",
+           "utils.py",
+           "data_imagenette.py",
+           "ranger.py"]
 
 doc_url = "https://ayasyrev.github.io/experiment_utils/"
 
