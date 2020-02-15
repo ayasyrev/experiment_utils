@@ -12,8 +12,10 @@ from .ranger import *
 
 # Cell
 # Dictionary defaults optimizers
-opt_dict = {'adam': {'func': optim.Adam},
-            'ranger': {'func': Ranger}}
+opt_dict = {'adam': {'func': optim.Adam,
+                     'params': {'betas': (0.95, 0.99), 'eps': 1e-6}},
+            'ranger': {'func': Ranger,
+                       'params': {'betas': (0.95, 0.99), 'eps': 1e-6}}}
 
 # Cell
 # data default parameters
@@ -58,7 +60,10 @@ class ExperimentParameters:
     def set_opt(self, opt_name):
         self.opt_name = opt_name
         self.opt_func = opt_dict[self.opt_name]['func'] #, **opt_dict[self.opt_name]['params'])
-        self.opt_params = param_parser(self.opt_func)
+#         self.opt_params = param_parser(self.opt_func)
+        self.opt_params = opt_dict[self.opt_name]['params']
+        self.opt_def_params = param_parser(self.opt_func)
+
         #         for k,v in self.data.items():
         #             setattr(self, k, v)
 

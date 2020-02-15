@@ -18,7 +18,8 @@ summary: "Collection of utils."
 -->
 
 <div class="container" id="notebook-container">
-    
+    {% raw %}
+        
 <div class="cell border-box-sizing code_cell rendered">
 
 </div>
@@ -237,6 +238,39 @@ summary: "Collection of utils."
 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># MOM shcheduller</span>
+<span class="k">def</span> <span class="nf">FCSchedMom</span><span class="p">(</span><span class="n">learn</span><span class="p">,</span> <span class="n">tot_epochs</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">moms</span><span class="p">:</span><span class="n">Floats</span><span class="o">=</span><span class="p">(</span><span class="mf">0.95</span><span class="p">,</span><span class="mf">0.999</span><span class="p">),</span>
+                          <span class="n">start_pct</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.72</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">curve</span><span class="o">=</span><span class="s1">&#39;cosine&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;refactored version of FCFit from fastai, only Lr&quot;&quot;&quot;</span>
+    <span class="n">shift_n</span> <span class="o">=</span> <span class="n">start_pct</span><span class="o">*</span><span class="n">shift</span>
+    <span class="n">b_all</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">learn</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">train_dl</span><span class="p">)</span> <span class="o">*</span> <span class="n">tot_epochs</span>
+    <span class="n">b_flat</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">b_all</span> <span class="o">*</span> <span class="p">(</span><span class="n">start_pct</span><span class="o">-</span><span class="n">shift_n</span><span class="p">))</span>
+    <span class="n">b_reduce</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">b_all</span><span class="o">*</span><span class="n">shift_n</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">b_finish</span> <span class="o">=</span> <span class="n">b_all</span> <span class="o">-</span> <span class="n">b_flat</span> <span class="o">-</span> <span class="n">b_reduce</span>
+        
+    
+    <span class="k">if</span> <span class="n">curve</span><span class="o">==</span><span class="s2">&quot;cosine&quot;</span><span class="p">:</span>        <span class="n">curve_type</span><span class="o">=</span><span class="n">annealing_cos</span>
+    <span class="k">elif</span> <span class="n">curve</span><span class="o">==</span><span class="s2">&quot;linear&quot;</span><span class="p">:</span>      <span class="n">curve_type</span><span class="o">=</span><span class="n">annealing_linear</span>
+    <span class="k">elif</span> <span class="n">curve</span><span class="o">==</span><span class="s2">&quot;exponential&quot;</span><span class="p">:</span> <span class="n">curve_type</span><span class="o">=</span><span class="n">annealing_exp</span>
+    <span class="k">else</span><span class="p">:</span> <span class="n">raiseValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;annealing type not supported </span><span class="si">{curve}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">ph_flat</span> <span class="o">=</span> <span class="n">TrainingPhase</span><span class="p">(</span><span class="n">b_flat</span><span class="p">)</span><span class="o">.</span><span class="n">schedule_hp</span><span class="p">(</span><span class="s1">&#39;mom&#39;</span><span class="p">,</span> <span class="n">moms</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">ph_reduce</span> <span class="o">=</span> <span class="n">TrainingPhase</span><span class="p">(</span><span class="n">b_reduce</span><span class="p">)</span><span class="o">.</span><span class="n">schedule_hp</span><span class="p">(</span><span class="s1">&#39;mom&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">moms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">moms</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="n">anneal</span><span class="o">=</span><span class="n">curve_type</span><span class="p">)</span>
+    <span class="n">ph_finish</span> <span class="o">=</span> <span class="n">TrainingPhase</span><span class="p">(</span><span class="n">b_finish</span><span class="p">)</span><span class="o">.</span><span class="n">schedule_hp</span><span class="p">(</span><span class="s1">&#39;mom&#39;</span><span class="p">,</span> <span class="n">moms</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">phases</span> <span class="o">=</span> <span class="p">[</span><span class="n">ph_flat</span><span class="p">,</span> <span class="n">ph_reduce</span><span class="p">,</span> <span class="n">ph_finish</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">GeneralScheduler</span><span class="p">(</span><span class="n">learn</span><span class="p">,</span> <span class="n">phases</span><span class="o">=</span><span class="n">phases</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
@@ -272,7 +306,7 @@ summary: "Collection of utils."
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="fc_lr_mom" class="doc_header"><code>fc_lr_mom</code><a href="https://github.com/ayasyrev/experiment_utils/tree/master/experiment_utils/utils.py#L102" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>fc_lr_mom</code>(<strong><code>learn</code></strong>:<code>Learner</code>, <strong><code>tot_epochs</code></strong>:<code>int</code>=<em><code>1</code></em>, <strong><code>lr</code></strong>:<code>float</code>=<em><code>slice(None, 0.003, None)</code></em>, <strong><code>moms</code></strong>=<em><code>False</code></em>, <strong><code>start_pct</code></strong>:<code>float</code>=<em><code>0.72</code></em>, <strong><code>wd</code></strong>:<code>float</code>=<em><code>None</code></em>, <strong><code>lr_final_div</code></strong>=<em><code>None</code></em>, <strong><code>shift</code></strong>=<em><code>0.1</code></em>, <strong><code>callbacks</code></strong>:<code>Optional</code>[<code>Collection</code>[<code>Callback</code>]]=<em><code>None</code></em>)</p>
+<h4 id="fc_lr_mom" class="doc_header"><code>fc_lr_mom</code><a href="https://github.com/ayasyrev/experiment_utils/tree/master/experiment_utils/utils.py#L115" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>fc_lr_mom</code>(<strong><code>learn</code></strong>:<code>Learner</code>, <strong><code>tot_epochs</code></strong>:<code>int</code>=<em><code>1</code></em>, <strong><code>lr</code></strong>:<code>float</code>=<em><code>slice(None, 0.003, None)</code></em>, <strong><code>moms</code></strong>=<em><code>False</code></em>, <strong><code>start_pct</code></strong>:<code>float</code>=<em><code>0.72</code></em>, <strong><code>wd</code></strong>:<code>float</code>=<em><code>None</code></em>, <strong><code>lr_final_div</code></strong>=<em><code>None</code></em>, <strong><code>shift</code></strong>=<em><code>0.1</code></em>, <strong><code>curve</code></strong>=<em><code>'cosine'</code></em>, <strong><code>callbacks</code></strong>:<code>Optional</code>[<code>Collection</code>[<code>Callback</code>]]=<em><code>None</code></em>)</p>
 </blockquote>
 <p>Fit a model with Flat Cosine Annealing</p>
 
@@ -296,7 +330,7 @@ summary: "Collection of utils."
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="fc" class="doc_header"><code>fc</code><a href="https://github.com/ayasyrev/experiment_utils/tree/master/experiment_utils/utils.py#L114" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>fc</code>(<strong><code>learn</code></strong>, <strong><code>show_graph</code></strong>=<em><code>False</code></em>)</p>
+<h4 id="fc" class="doc_header"><code>fc</code><a href="https://github.com/ayasyrev/experiment_utils/tree/master/experiment_utils/utils.py#L128" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>fc</code>(<strong><code>learn</code></strong>, <strong><code>show_graph</code></strong>=<em><code>False</code></em>)</p>
 </blockquote>
 <p>Run fc scheduled lr, mom, with learn, paramas in learn.p</p>
 
@@ -314,6 +348,7 @@ summary: "Collection of utils."
 </div>
 </div>
 </div>
+    {% endraw %}
 </div>
  
 

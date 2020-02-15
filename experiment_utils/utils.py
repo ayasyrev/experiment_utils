@@ -62,11 +62,11 @@ def FCSchedLr(learn, tot_epochs:int=1,  lr:float=4e-3,  start_pct:float=0.72,
     b_all = len(learn.data.train_dl) * tot_epochs
     b_flat = int(b_all * start_pct)
     b_reduce = b_all - b_flat
-
-    if curve=="cosine":        curve_type=annealing_cos
-    elif curve=="linear":      curve_type=annealing_linear
-    elif curve=="exponential": curve_type=annealing_exp
-    else: raiseValueError(f"annealing type not supported {curve}")
+    curve_type=annealing_cos
+#     if curve=="cosine":        curve_type=annealing_cos
+#     elif curve=="linear":      curve_type=annealing_linear
+#     elif curve=="exponential": curve_type=annealing_exp
+#     else: raiseValueError(f"annealing type not supported {curve}")
 
     ph_lr_flat = TrainingPhase(b_flat).schedule_hp('lr', lr)
     lr = (lr, lr/lr_final_div) if lr_final_div else lr
@@ -75,42 +75,56 @@ def FCSchedLr(learn, tot_epochs:int=1,  lr:float=4e-3,  start_pct:float=0.72,
     return GeneralScheduler(learn, phases=phases)
 
 # Cell
-# MOM shcheduller
+# version with step
 def FCSchedMom(learn, tot_epochs:int=1, moms:Floats=(0.95,0.999),
                           start_pct:float=0.72, shift=0.1, curve='cosine'):
     """refactored version of FCFit from fastai, only Lr"""
     shift_n = start_pct*shift
     b_all = len(learn.data.train_dl) * tot_epochs
-    b_flat = int(b_all * (start_pct-shift_n))
-    b_reduce = int(b_all*shift_n*2)
-    b_finish = b_all - b_flat - b_reduce
+    print('curve - ', curve)
+    if curve=="cosine":
+        curve_type=annealing_cos
+        b_flat = int(b_all * (start_pct-shift_n))
+        b_reduce = int(b_all*shift_n*2)
+        b_finish = b_all - b_flat - b_reduce
+        ph_flat = TrainingPhase(b_flat).schedule_hp('mom', moms[0])
+        ph_reduce = TrainingPhase(b_reduce).schedule_hp('mom', (moms[0],moms[1]),anneal=curve_type)
+        ph_finish = TrainingPhase(b_finish).schedule_hp('mom', moms[1])
+        phases = [ph_flat, ph_reduce, ph_finish]
+
+    elif curve=="step":
+#         curve_type=annealing_linear
+#     elif curve=="exponential": curve_type=annealing_exp
+        b_flat = int(b_all * (start_pct-shift_n))
+#         b_reduce = int(b_all*shift_n*2)
+        b_finish = b_all - b_flat
+        ph_flat = TrainingPhase(b_flat).schedule_hp('mom', moms[0])
+#         ph_reduce = TrainingPhase(b_reduce).schedule_hp('mom', (moms[0],moms[1]),anneal=curve_type)
+        ph_finish = TrainingPhase(b_finish).schedule_hp('mom', moms[1])
+        phases = [ph_flat, ph_finish]
 
 
-    if curve=="cosine":        curve_type=annealing_cos
-    elif curve=="linear":      curve_type=annealing_linear
-    elif curve=="exponential": curve_type=annealing_exp
+
     else: raiseValueError(f"annealing type not supported {curve}")
 
-    ph_flat = TrainingPhase(b_flat).schedule_hp('mom', moms[0])
-    ph_reduce = TrainingPhase(b_reduce).schedule_hp('mom', (moms[0],moms[1]),anneal=curve_type)
-    ph_finish = TrainingPhase(b_finish).schedule_hp('mom', moms[1])
-    phases = [ph_flat, ph_reduce, ph_finish]
+
     return GeneralScheduler(learn, phases=phases)
 
 # Cell
 # train model with schedullers - saparate Lr and MOMs
 def fc_lr_mom(learn:Learner, tot_epochs:int=1, lr:float=defaults.lr,  moms=False, start_pct:float=0.72,
-                  wd:float=None, lr_final_div=None, shift=0.1, callbacks:Optional[CallbackList]=None)->None:
+                  wd:float=None, lr_final_div=None, shift=0.1,
+                  curve='cosine', callbacks:Optional[CallbackList]=None)->None:
     "Fit a model with Flat Cosine Annealing"
     max_lr = learn.lr_range(lr)
     callbacks = listify(callbacks)
-    callbacks.append(FCSchedLr(learn, tot_epochs=tot_epochs,  lr=lr, start_pct=start_pct, lr_final_div=lr_final_div))
-    if moms: callbacks.append(FCSchedMom(learn,  tot_epochs=tot_epochs, moms=moms, start_pct=start_pct,shift=shift))
+    callbacks.append(FCSchedLr(learn, tot_epochs=tot_epochs,  lr=lr, start_pct=start_pct, lr_final_div=lr_final_div,curve=curve))
+    if moms: callbacks.append(FCSchedMom(learn,  tot_epochs=tot_epochs, moms=moms, start_pct=start_pct,shift=shift,curve=curve))
     learn.fit(tot_epochs, max_lr, wd=wd, callbacks=callbacks)
 
 # Cell
 # version for use with experiment.
-# TODO - refaor exp for automate it.
+# TODO - refactor exp for automate it.
 def fc(learn, show_graph=False):
     '''Run fc scheduled lr, mom, with learn, paramas in learn.p'''
     cbs = ShowGraph(learn) if show_graph else None
