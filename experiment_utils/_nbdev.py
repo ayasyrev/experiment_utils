@@ -2,8 +2,11 @@
 
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
-index = {"opt_dict": "00_experiment.ipynb",
+index = {"Parameters": "00_experiment.ipynb",
+         "opt_dict": "00_experiment.ipynb",
+         "opt_parameters": "00_experiment.ipynb",
          "data_params": "00_experiment.ipynb",
+         "data_parameters": "00_experiment.ipynb",
          "ExperimentParameters": "00_experiment.ipynb",
          "p": "00_experiment.ipynb",
          "get_learner": "00_experiment.ipynb",

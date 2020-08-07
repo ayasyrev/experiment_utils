@@ -3,13 +3,12 @@
 __all__ = ['param_parser', 'lr_f', 'plot', 'train', 'train_fc', 'FCSchedLr', 'FCSchedMom', 'fc_lr_mom', 'fc']
 
 # Cell
-# hide
 from fastai.basics import *
 from fastai.callbacks import GeneralScheduler, TrainingPhase
 
 # Cell
 def param_parser(func):
-    "Look at params in func and return an dict of args: default"
+    "Looks at params in func and return an dict of args: default"
     p ={}
     params = inspect.signature(func).parameters
     for k, v in params.items():

@@ -3,13 +3,12 @@
 __all__ = ['get_data']
 
 # Cell
-# hide
 from fastai.basics import *
 from fastai.vision import *
 
 # Cell
-# taken from fastai exampes
-def get_data(size=128, woof:int=1, bs=64, augm = 'min', workers=None, v2=True, **kwargs):
+# modified from fastai exampes
+def get_data(size=128, woof:int=1, bs=64, augm = 'min', workers=None, **kwargs):
 
     path = URLs.IMAGEWOOF     if woof else URLs.IMAGENETTE
     path = untar_data(path)
