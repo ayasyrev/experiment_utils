@@ -35,22 +35,22 @@ Learner.plot = plot
 # Cell
 # Basic train
 # Train learn with fit_one_cycle from fastai
-def train(learn, show_graph=False):
+def train(learn):
     '''Run fit_one_cycle with learner, params in learn.p'''
-    cbs = ShowGraph(learn) if show_graph else None
     print(f"epochs: {learn.p.epochs}, lr: {learn.p.lr:0.4f}, opt - {learn.p.opt_name}")
     learn.fit_one_cycle(learn.p.epochs, max_lr=learn.p.lr, div_factor=learn.p.div_factor,
-                        moms=learn.p.moms, pct_start=learn.p.pct_start, final_div=learn.p.final_div, callbacks=cbs)
+                        moms=learn.p.moms, pct_start=learn.p.pct_start, final_div=learn.p.final_div)
 Learner.train=train
 
 # Cell
 # Train learn with fit_fc from fastai.
-def train_fc(learn, show_graph=False):
+# def train_fc(learn, show_graph=False, cbs=[]):
+def train_fc(learn):
     '''Run fit_fc with learn, paramas in learn.p'''
-    cbs = ShowGraph(learn) if show_graph else None
+#     cbs = ShowGraph(learn) if show_graph else None
     print(f"epochs: {learn.p.epochs}, lr: {learn.p.lr:0.4f}, opt - {learn.p.opt_name}")
     learn.fit_fc(learn.p.epochs, lr=learn.p.lr, start_pct=learn.p.fc_start_pct,
-                        moms=learn.p.moms, callbacks=cbs)
+                        moms=learn.p.moms)
 # Learner.train_fc=train_fc
 
 # Cell
@@ -124,10 +124,10 @@ def fc_lr_mom(learn:Learner, tot_epochs:int=1, lr:float=defaults.lr,  moms=False
 # Cell
 # version for use with experiment.
 # TODO - refactor exp for automate it.
-def fc(learn, show_graph=False):
+def fc(learn):
     '''Run fc scheduled lr, mom, with learn, paramas in learn.p'''
-    cbs = ShowGraph(learn) if show_graph else None
+#     cbs = ShowGraph(learn) if show_graph else None
     print(f"epochs: {learn.p.epochs}, lr: {learn.p.lr:0.4f}, opt - {learn.p.opt_name}")
     fc_lr_mom(learn, learn.p.epochs, lr=learn.p.lr,
                     start_pct=learn.p.fc_start_pct, lr_final_div=learn.p.final_div,
-                        moms=learn.p.moms, shift=learn.p.shift, callbacks=cbs) # !wd
+                        moms=learn.p.moms, shift=learn.p.shift) # !wd

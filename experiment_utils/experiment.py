@@ -56,7 +56,7 @@ class ExperimentParameters:
 #     def __init__(self, data=data_params):
     def __init__(self, data=data_parameters):
         self.exp_name:  str = 'noname'
-        self.pipeline = [train]
+        self.pipeline = [train_fc]
         self.data = data
     # Learner part
         self.model     = partial(resnet18, num_classes=10)
@@ -67,6 +67,7 @@ class ExperimentParameters:
         self.wd      = 1e-2
         self.bn_wd   = False
         self.true_wd = True
+        self.callback_fns = []
     # train
         self.epochs     = 5
         self.lr         = 0.01
@@ -112,7 +113,7 @@ def get_learner(p=p):
                 opt_func=p.opt,
                 metrics=p.metrics,
                 wd=p.wd, bn_wd=p.bn_wd, true_wd=p.true_wd,
-                loss_func=p.loss_func())
+                loss_func=p.loss_func(), callback_fns=p.callback_fns)
     learn.p = p
     if learn.p.mixup: learn = learn.mixup(alpha=learn.p.mixup)
 
