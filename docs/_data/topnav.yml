@@ -1,8 +1,8 @@
 topnav:
 - title: Topnav
   items:
-    - title: GitHub
-      external_url: https://github.com/ayasyrev/experiment-utils
+    - title: github
+      external_url: https://github.com/ayasyrev/experiment_utils/tree/master/
 
 #Topnav dropdowns
 topnav_dropdowns:

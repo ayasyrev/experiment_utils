@@ -1,9 +1,9 @@
-repository: ayasyrev/experiment-utils
+repository: ayasyrev/experiment_utils
 output: web
-topnav_title: experiment-utils
-site_title: experiment-utils
-company_name: Andrei Yasyrev
-description: Helpers utils for manage and track experiments.
+topnav_title: experiment_utils
+site_title: experiment_utils
+company_name: A. Yasyrev
+description: A description of your project
 # Set to false to disable KaTeX math
 use_math: true
 # Add Google analytics id if you have one and want to use it here
@@ -58,7 +58,9 @@ defaults:
 
 sidebars:
 - home_sidebar
-permalink: pretty
 
-theme: jekyll-theme-cayman
+plugins:
+    - jekyll-remote-theme
+    
+remote_theme: fastai/nbdev-jekyll-theme
 baseurl: /experiment_utils/
