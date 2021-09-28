@@ -1,0 +1,6 @@
+_target_: fastai.vision.augment.RandomErasing
+# p: 0.5
+# sl: 0.
+# sh: 0.3
+# min_aspect: 0.3
+# max_count: 1

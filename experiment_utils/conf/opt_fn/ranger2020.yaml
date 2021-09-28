@@ -1,0 +1,13 @@
+_target_: pt_utils.utils_hydra.load_partial_func
+function: ranger.ranger2020.Ranger
+
+lr: 1e-3
+alpha: 0.5
+k: 6
+N_sma_threshhold: 5
+betas: [0.95, 0.999]
+eps: 1e-6
+weight_decay: 0
+use_gc: True
+gc_conv_only: False
+gc_loc: True

@@ -1,0 +1,2 @@
+_target_: fastai.vision.augment.FlipItem
+p: 0.5

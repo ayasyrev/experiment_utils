@@ -1,0 +1,8 @@
+defaults:
+  - fit_anneal_warmap
+
+annealing_type: poly
+power: 2
+# no warmaup
+pct_warmup: 0.
+div_warmup: 1

@@ -1,0 +1,3 @@
+defaults:
+  - imagenette
+data_dir: /Data/imagenette2-320

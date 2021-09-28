@@ -1,0 +1,5 @@
+_target_: kornia.filters.MaxBlurPool2D
+kernel_size: 3
+ceil_mode: True  # def False
+stride: 2
+max_pool_size: 2

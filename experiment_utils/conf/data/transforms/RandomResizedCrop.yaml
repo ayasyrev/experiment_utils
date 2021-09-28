@@ -1,0 +1,3 @@
+_target_: fastai.vision.augment.RandomResizedCrop
+size: ${data.size}
+min_scale: ${data.min_scale}
