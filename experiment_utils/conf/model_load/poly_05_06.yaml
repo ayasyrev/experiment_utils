@@ -1,0 +1,5 @@
+model_load: True
+model_path: /Data/imagenette2-320/
+# file_name: ya50_poly_05_06
+file_name: Sequential_20210920_154408_8094
+with_opt: True

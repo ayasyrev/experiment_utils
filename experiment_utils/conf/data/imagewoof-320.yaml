@@ -1,0 +1,4 @@
+# @package _group_
+defaults:
+  - imagenette
+data_dir: /Data/imagewoo2-320

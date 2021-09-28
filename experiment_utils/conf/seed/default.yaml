@@ -1,0 +1,8 @@
+_target_: pt_utils.utils.set_seed
+SEED_NUM: 2021
+seed_pythonhash: True
+seed_random: True
+seed_numpy: True
+seed_torch: True
+torch_benchmark: True
+torch_deterministic: False

@@ -1,0 +1,41 @@
+defaults: 
+  - seed: default
+  - data: imagenette-320
+  - model: resnet18
+  - model_load: no_load
+  - model_save: no_save
+  - opt_fn: ranger_fastai
+  - loss_fn: LabelSmoothingCrossEntropy
+  - train: fit_flat_cos
+  - _self_
+
+run:
+  repeat: 1
+  log_lr: true
+  log_loss: true
+
+  date_time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
+
+train:
+  epochs: 5
+  lr: 0.008
+  wd: 0.01
+
+convert_model_blur: true
+
+seed:
+  torch_deterministic: True
+  torch_benchmark: False
+
+data:
+  size: 128
+  dataloader:
+    batch_size: 32
+    num_workers: 4
+
+hydra:
+  run:
+    dir: /Logs/Hydra/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    dir: /Logs/Hydra/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    subdir: ${hydra.job.num}

@@ -1,0 +1,21 @@
+defaults:
+  - ranger21_default@_here_
+
+betas: [0.9, 0.999]  # temp for checking tuned warmups
+momentum: 0.9
+eps: 1e-6
+weight_decay: 0
+
+num_batches_per_epoch: 100
+num_epochs: 1
+
+use_warmup: False
+num_warmup_iterations: None
+warmup_type: linear
+warmup_pct_default: 0.22
+
+warmdown_active: False
+warmdown_start_pct: 0.72
+warmdown_min_lr: 3e-5
+
+logging_active: True

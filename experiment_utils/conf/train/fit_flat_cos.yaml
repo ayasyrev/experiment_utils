@@ -1,0 +1,7 @@
+defaults:
+  - fit_anneal_warmap
+
+annealing_type: cos
+# flat_cos is fit_anneal_warmap without warmaup
+pct_warmup: 0.
+div_warmup: 1

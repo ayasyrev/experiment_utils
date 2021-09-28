@@ -1,0 +1,14 @@
+_target_: pt_utils.utils_hydra.load_partial_func
+function: ranger.Ranger
+lr: 0.001
+# Ranger options
+alpha: 0.5
+k: 6
+N_sma_threshhold: 5
+# Adam options
+betas: [0.95, 0.999]
+eps: 1e-6
+weight_decay: 0
+# Gradient centralization
+use_gc: True
+gc_conv_only: False
