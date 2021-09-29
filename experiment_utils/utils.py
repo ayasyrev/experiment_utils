@@ -2,9 +2,10 @@ import os
 import random
 from typing import List, Tuple
 
-import torch
 import numpy as np
+import torch
 from rich import print
+from omegaconf import OmegaConf, DictConfig
 
 
 def stat(results: List[float]) -> Tuple[float]:
@@ -43,3 +44,13 @@ def set_seed(SEED_NUM: int = 2021,
 
     torch.backends.cudnn.benchmark = torch_benchmark
     torch.backends.cudnn.deterministic = torch_deterministic
+
+
+def show_cfg(cfg: DictConfig, resolve: bool = True) -> None:
+    """Print Omegaconf config.
+
+    Args:
+        cfg (DictConfig): confit to print
+        resolve (bool, optional): Resolve or not. Defaults to True.
+    """
+    print(OmegaConf.to_yaml(cfg, resolve=resolve))
