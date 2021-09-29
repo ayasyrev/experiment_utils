@@ -8,11 +8,9 @@ from fastai.basics import (CategoryBlock, DataBlock, GrandparentSplitter,
 
 from fastai.vision.all import ImageBlock
 from fastprogress import fastprogress
-from model_constructor.net import Net
 from omegaconf import DictConfig
 
 from experiment_utils.logger import Logger
-from experiment_utils.fastai_utils import convert_MP_to_blurMP
 
 
 fastprogress.MAX_COLS = 80
@@ -46,11 +44,6 @@ def get_learner(cfg):
     )
 
     model = hydra.utils.instantiate(cfg.model, _convert_='all')
-    if isinstance(model, Net):
-        model = model()
-    else:
-        if cfg.convert_model_blur:
-            model = convert_MP_to_blurMP(model, torch.nn.MaxPool2d)
 
     opt_fn = hydra.utils.call(cfg.opt_fn)
 

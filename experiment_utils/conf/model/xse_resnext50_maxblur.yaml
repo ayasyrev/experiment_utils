@@ -1,0 +1,7 @@
+_target_: experiment_utils.fastai_utils.convert_MP_to_blurMP
+defaults:
+  - xse_resnext50@model
+
+layer_type_old:
+  _target_: experiment_utils.utils_hydra.load_obj
+  obj_path: torch.nn.MaxPool2d

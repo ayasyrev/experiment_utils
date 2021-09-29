@@ -21,8 +21,6 @@ train:
   lr: 0.008
   wd: 0.01
 
-convert_model_blur: true
-
 seed:
   torch_deterministic: True
   torch_benchmark: False
