@@ -1,10 +1,10 @@
 _target_: fastai.vision.models.xresnet.xse_resnext50
 n_out: ${data.num_classes}
 act_cls:
-  _target_: pt_utils.utils_hydra.load_partial_func
+  _target_: experiment_utils.utils_hydra.load_partial_func
   function: torch.nn.modules.activation.Mish
 sa: 1
 sym: 0
 pool:
-  _target_: pt_utils.utils_hydra.load_partial_func
+  _target_: experiment_utils.utils_hydra.load_partial_func
   function: fastai.layers.MaxPool
