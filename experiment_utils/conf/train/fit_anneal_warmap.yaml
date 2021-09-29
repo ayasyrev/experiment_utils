@@ -1,5 +1,5 @@
-_target_: experiment_utils.utils_hydra.load_partial_func
-function: experiment_utils.fastai_utils.fit_anneal_warmap
+_target_: experiment_utils.utils.hydra_utils.load_partial_func
+function: experiment_utils.utils.fastai_utils.fit_anneal_warmap
 
 pct_warmup: 0.05  # 0.
 div_warmup: 10  # 1

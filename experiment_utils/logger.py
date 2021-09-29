@@ -1,5 +1,5 @@
 import csv
-from experiment_utils.utils import stat
+from experiment_utils.utils.utils import stat
 import time
 from typing import List
 
@@ -57,7 +57,6 @@ class Logger:
                   if self.cfg.model_save.file_name == 'model'
                   else self.cfg.model_save.file_name)
             self.learn.save(fn, with_opt=self.cfg.model_save.with_opt)
-        # return acc
 
     def log_run(self):
         if self.cfg.run.log_lr:
