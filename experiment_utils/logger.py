@@ -1,11 +1,20 @@
 import csv
+from experiment_utils.utils import stat
 import time
 from typing import List
 
-import numpy as np
 from fastai.basics import Learner
 from omegaconf import DictConfig, OmegaConf
-from pt_utils.utils import format_time
+
+
+def format_time(seconds: float, long: bool = True) -> str:
+    "Format secons to mm:ss, optoinal mm:ss.ms"
+    seconds_int = int(seconds)
+    min, sec = (seconds_int // 60) % 60, seconds_int % 60
+    res = f'{min:02d}:{sec:02d}'
+    if long:
+        res = '.'.join([res, f'{int((seconds - seconds_int) * 10)}'])
+    return res
 
 
 class Logger:
@@ -73,10 +82,8 @@ def log_resume(results: List[float]) -> None:
     Args:
         results (List[float]): List of results.
     """
-    stat = np.array(results)
-    mean = stat.mean()
-    std = stat.std()
-    print(f"{mean:0.4f} {std:0.4f}")
+    mean, std = stat(results)
+    print(f"mean: {mean:0.2%} std: {std:0.4f}")
     file_name = f"mean_{int(mean*10000)}_std_{int(std*10000):04}.csv"
     with open(file_name, 'w') as f:
         for result in results:
