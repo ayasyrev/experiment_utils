@@ -18,7 +18,7 @@ def convert_MP_to_blurMP(model, layer_type_old):
 
         if type(module) == layer_type_old:
             # layer_old = module
-            layer_new = kornia.contrib.MaxBlurPool2d(3, True)
+            layer_new = kornia.filters.MaxBlurPool2D(kernel_size=3, ceil_mode=True)
             model._modules[name] = layer_new
 
     return model

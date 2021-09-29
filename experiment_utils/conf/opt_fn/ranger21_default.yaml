@@ -1,4 +1,4 @@
-_target_: pt_utils.utils_hydra.load_partial_func
+_target_: experiment_utils.utils_hydra.load_partial_func
 function: ranger21.Ranger21
 lr: 0.001
 lookahead_active: True
