@@ -1,7 +1,7 @@
 defaults: 
   - seed: default
   - data: imagenette-320
-  - model: resnet18
+  - model: xseresnext50maxblur  # resnet18
   - model_load: no_load
   - model_save: no_save
   - opt_fn: ranger_fastai
