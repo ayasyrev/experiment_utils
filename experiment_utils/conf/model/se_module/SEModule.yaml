@@ -1,0 +1,3 @@
+_target_: experiment_utils.utils.hydra_utils.load_partial_func
+function: model_constructor.layers.SEModule
+use_bias: True

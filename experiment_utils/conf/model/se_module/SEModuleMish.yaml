@@ -1,0 +1,3 @@
+defaults:
+  - SEModule
+  - /model/act_fn@act_fn: Mish

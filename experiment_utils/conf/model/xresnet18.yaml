@@ -1,0 +1,33 @@
+_target_: experiment_utils.utils.hydra_utils.call_class
+# class_name:  model_constructor.net.Net
+class_name:  model_constructor.ModelConstructor
+name: xResNet18
+
+defaults:
+  - block: ResBlock
+  # - act_fn: Mish
+  - act_fn: ReLu
+  - pool: AvgPool2d
+  - pool@stem_pool: MaxPool2d
+
+c_in: 3
+c_out: ${data.num_classes}
+block_sizes: [64, 128, 256, 512]
+layers: [2, 2, 2, 2]
+norm:
+  _target_: experiment_utils.utils.hydra_utils.load_partial_func
+  function: torch.nn.BatchNorm2d
+
+expansion: 1
+groups: 1
+dw: False
+# div_groups: None
+sa: 0
+se: 0
+se_reduction: 16
+bn_1st: True
+zero_bn: True
+stem_stride_on: 0
+stem_sizes: [32, 32, 64]
+
+stem_bn_end: False
