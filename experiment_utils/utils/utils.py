@@ -46,6 +46,11 @@ def set_seed(SEED_NUM: int = 2021,
     torch.backends.cudnn.deterministic = torch_deterministic
 
 
+def no_seed(**kwargs) -> None:
+    '''Empty func - seed nothing'''
+    pass
+
+
 def show_cfg(cfg: DictConfig, resolve: bool = True) -> None:
     """Print Omegaconf config.
 

@@ -1,5 +1,5 @@
 defaults: 
-  - seed: default
+  - seed: set_seed
   - data: imagenette-320
   - model: xseresnext50maxblur  # resnet18
   - model_load: no_load
