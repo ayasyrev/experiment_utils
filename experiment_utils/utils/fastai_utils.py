@@ -37,7 +37,7 @@ def fit_anneal_warmap(
     pct_start=0.75, div_final=1e5, annealing_type='cos',
     cbs=None, reset_opt=False, wd=None, power=1
 ):
-    "Fit `self.model` for `n_cycles` of `cycle_len` using SGDR."
+    "Fit `self.model` for `n_cycles` with warmap and annealing."
     if self.opt is None:
         self.create_opt()
     self.opt.set_hyper('lr', self.lr if lr is None else lr)
