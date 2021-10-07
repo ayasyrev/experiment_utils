@@ -1,4 +1,5 @@
 import csv
+from pathlib import Path
 from experiment_utils.utils.utils import stat
 import time
 from typing import List
@@ -21,7 +22,11 @@ class Logger:
     """Log results"""
     def __init__(self, cfg: DictConfig) -> None:
         self.cfg = cfg
-        with open('cfg.yaml', 'w') as f:
+        self.log_dir = Path(cfg.run.log_dir)
+        if self.log_dir.exists() and cfg.run.log_dir != '.':
+            self.log_dir = Path(f"{cfg.run.log_dir}_{time.strftime('%Y-%m-%d_%H-%M-%S')}") 
+        self.log_dir.mkdir(exist_ok=True)
+        with open(self.log_dir / 'cfg.yaml', 'w') as f:
             f.write(OmegaConf.to_yaml(cfg, resolve=True))
         self.results = []
 
@@ -34,7 +39,7 @@ class Logger:
         self.start_time = time.time()
 
     def log_model(self):
-        with open(f'model_{self.learn.model._get_name()}.txt', 'w') as f:
+        with open(self.log_dir / f'model_{self.learn.model._get_name()}.txt', 'w') as f:
             f.write(str(self.learn.model))
 
     def log_job(self) -> None:
@@ -46,11 +51,11 @@ class Logger:
         name_suffix = str(int(acc * 10000))
         if self.cfg.run.repeat > 1:
             name_suffix = f"{self.repeat}_{name_suffix}"
-        log_result(name_suffix=name_suffix,
-                   header=self.learn.recorder.metric_names[1:-1],
-                   values=self.learn.recorder.values)
+        self.log_result(name_suffix=name_suffix)  #,
+                #    header=self.learn.recorder.metric_names[1:-1],
+                #    values=self.learn.recorder.values)
         if self.cfg.run.log_loss:
-            log_lr(self.learn.recorder.losses, f"losses_{name_suffix}")
+            self.log_values(self.learn.recorder.losses, f"losses_{name_suffix}")
         print(50 * '=')
         if self.cfg.model_save.model_save:
             fn = (f"{self.learn.model._get_name()}_{self.cfg.date_time}_{name_suffix}"
@@ -60,37 +65,40 @@ class Logger:
 
     def log_run(self):
         if self.cfg.run.log_lr:
-            log_lr(self.learn.recorder.lrs, 'lrs')
+            self.log_values(self.learn.recorder.lrs, 'lrs')
 
         if self.cfg.run.repeat > 1:
-            log_resume(self.results)
+            self.log_resume()
 
 
-def log_result(file_name: str = 'log_res', name_suffix: str = '', header: List[str] = [], values: List = []) -> None:
-    if name_suffix != '':
-        name_suffix = '_' + name_suffix
-    with open(f"{file_name}{name_suffix}.csv", 'w') as f:
-        writer = csv.writer(f)
-        writer.writerow(header)
-        writer.writerows(values)
+    # def log_result(self, file_name: str = 'log_res', name_suffix: str = '', header: List[str] = [], values: List = []) -> None:
+    def log_result(self, file_name: str = 'log_res', name_suffix: str = ''):  # , header: List[str] = [], values: List = []) -> None:
+        if name_suffix != '':
+            name_suffix = '_' + name_suffix
+        with open(self.log_dir / f"{file_name}{name_suffix}.csv", 'w') as f:
+            writer = csv.writer(f)
+            # writer.writerow(header)
+            # writer.writerows(values)
+            writer.writerow(self.learn.recorder.metric_names[1:-1])
+            writer.writerows(self.learn.recorder.values)
+
+    def log_resume(self) -> None:
+        """Write results to file
+
+        Args:
+            results (List[float]): List of results.
+        """
+        mean, std = stat(self.results)
+        print(f"mean: {mean:0.2%} std: {std:0.4f}")
+        file_name = f"mean_{int(mean*10000)}_std_{int(std*10000):04}.csv"
+        with open(self.log_dir / file_name, 'w') as f:
+            for result in self.results:
+                f.write(f"{result}\n")
+            f.write(f"#\n{mean}\n{std}")
 
 
-def log_resume(results: List[float]) -> None:
-    """Write results to file
-
-    Args:
-        results (List[float]): List of results.
-    """
-    mean, std = stat(results)
-    print(f"mean: {mean:0.2%} std: {std:0.4f}")
-    file_name = f"mean_{int(mean*10000)}_std_{int(std*10000):04}.csv"
-    with open(file_name, 'w') as f:
-        for result in results:
-            f.write(f"{result}\n")
-        f.write(f"#\n{mean}\n{std}")
-
-
-def log_lr(values: List[float], name: str) -> None:
-    """Write values to csv file"""
-    with open(f"{name}.csv", "w") as f:
-        f.writelines(map(lambda i: f"{i}\n", values))
+    def log_values(self, values, name) -> None:
+        """Write lrs to csv file"""
+        with open(self.log_dir / f"{name}.csv", "w") as f:
+            # f.writelines(map(lambda i: f"{i}\n", self.learn.recorder.lrs))
+            f.writelines(map(lambda i: f"{i}\n", values))
