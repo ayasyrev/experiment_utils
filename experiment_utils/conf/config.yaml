@@ -11,6 +11,7 @@ defaults:
 
 run:
   repeat: 1
+  log_dir: .
   log_lr: true
   log_loss: true
 
