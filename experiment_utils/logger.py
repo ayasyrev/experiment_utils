@@ -2,7 +2,6 @@ import csv
 from pathlib import Path
 from experiment_utils.utils.utils import stat
 import time
-from typing import List
 
 from fastai.basics import Learner
 from omegaconf import DictConfig, OmegaConf
@@ -24,13 +23,13 @@ class Logger:
         self.cfg = cfg
         self.log_dir = Path(cfg.run.log_dir)
         if self.log_dir.exists() and cfg.run.log_dir != '.':
-            self.log_dir = Path(f"{cfg.run.log_dir}_{time.strftime('%Y-%m-%d_%H-%M-%S')}") 
-        self.log_dir.mkdir(exist_ok=True)
+            self.log_dir = Path(f"{cfg.run.log_dir}_{time.strftime('%Y-%m-%d_%H-%M-%S')}")
+        self.log_dir.mkdir(exist_ok=True, parents=True)
         with open(self.log_dir / 'cfg.yaml', 'w') as f:
             f.write(OmegaConf.to_yaml(cfg, resolve=True))
         self.results = []
 
-    def start_job(self, learn: Learner, repeat: int):
+    def start_job(self, learn: Learner, repeat: int) -> None:
         self.learn = learn
         self.repeat = repeat
         self.log_model()
@@ -51,9 +50,7 @@ class Logger:
         name_suffix = str(int(acc * 10000))
         if self.cfg.run.repeat > 1:
             name_suffix = f"{self.repeat}_{name_suffix}"
-        self.log_result(name_suffix=name_suffix)  #,
-                #    header=self.learn.recorder.metric_names[1:-1],
-                #    values=self.learn.recorder.values)
+        self.log_result(name_suffix=name_suffix)
         if self.cfg.run.log_loss:
             self.log_values(self.learn.recorder.losses, f"losses_{name_suffix}")
         print(50 * '=')
@@ -63,22 +60,18 @@ class Logger:
                   else self.cfg.model_save.file_name)
             self.learn.save(fn, with_opt=self.cfg.model_save.with_opt)
 
-    def log_run(self):
+    def log_run(self) -> None:
         if self.cfg.run.log_lr:
             self.log_values(self.learn.recorder.lrs, 'lrs')
 
         if self.cfg.run.repeat > 1:
             self.log_resume()
 
-
-    # def log_result(self, file_name: str = 'log_res', name_suffix: str = '', header: List[str] = [], values: List = []) -> None:
-    def log_result(self, file_name: str = 'log_res', name_suffix: str = ''):  # , header: List[str] = [], values: List = []) -> None:
+    def log_result(self, file_name: str = 'log_res', name_suffix: str = '') -> None:
         if name_suffix != '':
             name_suffix = '_' + name_suffix
         with open(self.log_dir / f"{file_name}{name_suffix}.csv", 'w') as f:
             writer = csv.writer(f)
-            # writer.writerow(header)
-            # writer.writerows(values)
             writer.writerow(self.learn.recorder.metric_names[1:-1])
             writer.writerows(self.learn.recorder.values)
 
@@ -96,9 +89,7 @@ class Logger:
                 f.write(f"{result}\n")
             f.write(f"#\n{mean}\n{std}")
 
-
     def log_values(self, values, name) -> None:
         """Write lrs to csv file"""
         with open(self.log_dir / f"{name}.csv", "w") as f:
-            # f.writelines(map(lambda i: f"{i}\n", self.learn.recorder.lrs))
             f.writelines(map(lambda i: f"{i}\n", values))

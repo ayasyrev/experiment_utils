@@ -1,102 +1,186 @@
 import csv
-from pathlib import Path
-from typing import List, Union
+from pathlib import Path, PosixPath
+from typing import List, Tuple, Union
 
-import numpy as np
-import pandas as pd
+from experiment_utils.utils.utils import print_stat, stat
+from matplotlib import pyplot as plt
 from omegaconf import OmegaConf
+from omegaconf.dictconfig import DictConfig
+from pt_utils.utils import flat_dict
 from rich import print
 
-# from torch.utils.tensorboard import SummaryWriter
-from pt_utils.utils import flat_dict, clear_dict
+
+def get_result_files(path: PosixPath) -> List[PosixPath]:
+    return [fn for fn in path.iterdir() if fn.name.startswith('log_res')]
 
 
-def get_log_dirs(path: Union[str, List[str]]):
+class Run:
+    def __init__(self, path: Union[str, PosixPath]) -> None:
+        self.path = Path(path)
+        self.result_files = get_result_files(self.path)
+        self.repeats = len(self.result_files)
+        self._results = None
+        self._metrics = None
+        if self.repeats == 1:
+            self.accuracy = read_accuracy_from_file(self.result_files[0])
+        else:
+            mean_fn = [fn for fn in self.path.iterdir() if fn.name.startswith('mean')]
+            if len(mean_fn) == 0:  # if run stoped incorrectly, no file with results
+                self.accuracy, self.std = calc_mean(self.result_files)
+            else:
+                self.accuracy, self.std = read_mean_from_file(mean_fn[0])
+
+    def __repr__(self) -> str:
+        if self.repeats > 1:
+            std_str = f"repeats: {self.repeats}, std: {self.std:0.4f}"
+        else:
+            std_str = ''
+        return f"acc: {self.accuracy:.2%}, path: {self.path.name}  {std_str}"
+
+    def plot_lr(self) -> None:
+        lrs = read_values_from_file(self.path / 'lrs.csv')
+        plt.plot(lrs)
+
+    def plot_metrics(self, metric: Union[str, List[str]] = None, stack=False) -> None:
+        if metric is None:
+            metric = self.metrics
+        else:
+            if type(metric) is str:
+                metric = [metric]
+            for m in metric:
+                assert m in self.metrics
+        results = []
+        for result in self.results:
+            values = {m: [] for m in metric}
+            for item in result:
+                for m in metric:
+                    values[m].append(item[m])
+            results.append(values)
+        self._plot_results(metric, stack, results)
+
+    def _plot_results(self, metric, stack, results):
+        if stack:
+            for num, result in enumerate(results):
+                for m in metric:
+                    plt.plot(result[m], label=f"{m}_{num}")
+            plt.legend()
+        else:
+            fig, axs = plt.subplots(len(results), figsize=(5, 3 * len(results)))
+            for num, ax in enumerate(axs):
+                for metric in results[num]:
+                    ax.plot(results[num][metric], label=metric)
+                ax.legend()
+
+    @property
+    def results(self) -> List[List]:
+        if self._results is None:
+            self._results = [read_result_from_file(res_file) for res_file in self.result_files]
+        return self._results
+
+    @property
+    def metrics(self) -> List[str]:
+        if self._metrics is None:
+            self._metrics = list(self.results[0][0].keys())
+        return self._metrics
+
+    @property
+    def result(self) -> str:
+        std = f"std {self.std:0.4f}" if self.repeats > 1 else ""
+        return f"{self.accuracy:.2%} {std}"
+
+
+def get_log_dirs(path: Union[str, List[str]]) -> List[PosixPath]:
+    """Return list of dirs with logs.
+
+    Args:
+        path (Union[str, List[str]]): Path or list of pathes to log dirs.
+
+    Returns:
+        List[PosixPath]: List of dirs with results logs.
+    """
     if type(path) is list:
         path_list = [Path(i) for i in path]
     else:
-        path_list =[Path(path)]
+        path_list = [Path(path)]
     log_dirs = []
     for path in path_list:
-        log_dirs.extend(fn.parent for fn in path.rglob('*.hydra*'))
+        log_dirs.extend(fn.parent for fn in path.rglob('*cfg.yaml') if len(get_result_files(fn.parent)) > 0)
+    log_dirs.sort(key=lambda x: x.stat().st_ctime)
     return log_dirs
 
 
-def get_cfg(fn):
-    cfg = OmegaConf.load(fn / 'cfg.yaml')
-    cfg.fn = str(fn)
-    return flat_dict(cfg)
+def read_mean_from_file(filename: PosixPath) -> Tuple[float]:
+    """Read mean, std from file with results."""
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+    mean = float(lines[-2].strip())
+    std = float(lines[-1].strip())
+    return mean, std
 
 
-def get_hparams(cfg, unics):
-    hparams = {k: cfg.get(k, 'None') for k in unics}
-    return hparams
-
-
-
-def get_result(cfg):
-    log_path = Path(cfg['fn'])
-    files = [fn for fn in log_path.iterdir() if fn.name.startswith('log_res')]
-#         if len(files) > 0:
-#     print(res_file)
-    data = read_result(files[0])
-    return data
-
-
-def get_acc(cfg):
-    log_path = Path(cfg['fn'])
-    files = [fn for fn in log_path.iterdir() if fn.name.startswith('log_res')]
-    if len(files) > 0:
-#         if len(files) > 0:
-#     print(res_file)
-        data = read_result(files[0])
-        acc = float(data[-1]['accuracy'])
-    else:
-        acc = 0
-    return acc
-
-def find_results(log_dir, thresold=0.8, sort=False, max_is_best=True):
-    log_dirs = get_log_dirs(log_dir)
-#     log_dirs.sort()
-    log_dirs.sort(key=lambda x: int(x.name.split('_')[0]))
+def read_result_from_file(filename: Union[str, PosixPath]) -> List[dict]:
+    """Read result from file."""
     res = []
-    for path in log_dirs:
-        acc = get_acc(get_cfg(path))
-        if acc > thresold:
-            res.append((acc, path))
-#         if not '__' in path.name:
-#             new_name = f"{path.name}__{int(acc*10000)}"
-#             print(new_name)
-    if sort:
-        res.sort(key=lambda x: x[0], reverse=max_is_best)
-    return res
-
-def rename_from_res(acc_path: tuple):
-       for (acc, path) in acc_path:
-        if not '__' in path.name:
-            new_name = path.parent / f"{path.name}__{int(acc*10000)}"
-            path.rename(new_name)
-
-
-def rename_logdirs(log_dir, thresold=0.8):
-    acc_path = find_results(log_dir, thresold)
-    rename_from_res(acc_path)
-
-
-def print_result(res: tuple, sort=True, max_is_best=True):
-    
-#     res_to_print = sorted(res, key=lambda x: x[0], reverse=max_is_best) if sort else res
-    res_to_print = sorted(res, key=lambda x: x[0], reverse=max_is_best) if sort else res
-#         res.sort(key=lambda x: x[0], reverse=max_is_best)
-    for acc, path in res_to_print:
-        print(f"{acc:0.2%} {path.name}")
-
-
-def read_result(fn):
-    res = []
-    with open(fn, 'r') as f:
+    with open(filename, 'r') as f:
         reader = csv.DictReader(f)
         for line in reader:
-            res.append(line)
+            res.append({key: float(value) for key, value in line.items()})
     return res
 
+
+def read_values_from_file(filename: Union[str, PosixPath]) -> List[float]:
+    """Read result from file."""
+    values = []
+    with open(filename, 'r') as f:
+        for val in f.readlines():
+            values.append(float(val))
+    return values
+
+
+def read_accuracy_from_file(filename: PosixPath) -> float:
+    data = read_result_from_file(filename)
+    return data[-1]['accuracy']
+
+
+def calc_mean(filenames: List[PosixPath]) -> Tuple[float]:
+    """Calculate mean from results in files."""
+    res = []
+    for fn in filenames:
+        res.append(read_accuracy_from_file(fn))
+    return stat(res)
+
+
+def get_runs(path: Union[str, PosixPath], sort: bool = True, max_is_best: bool = True) -> List[Run]:
+    log_dirs = get_log_dirs(path)
+    runs = [Run(fn) for fn in log_dirs]
+    if sort:
+        runs.sort(key=lambda x: x.accuracy, reverse=max_is_best)
+    return runs
+
+
+def stat_runs(runs: List[Run]) -> Tuple[float]:
+    print_stat([run.accuracy for run in runs])
+
+
+def get_cfg(path: Union[str, PosixPath], flat: bool = False) -> Union[DictConfig, dict]:
+    """Read cfg from path.
+
+    Args:
+        path (Union[str, PosixPath]): Directory name.
+        flat (bool, optional): If True, return flattened dict. Defaults to False.
+
+    Returns:
+        Union[DictConfig, dict]: return config as OmegaConf DictConfig or as flattened dict.
+    """
+    cfg = OmegaConf.load(path / 'cfg.yaml')
+    cfg.fn = str(path)
+    if flat:
+        cfg = flat_dict(cfg)
+    return cfg
+
+
+def print_runs(runs: List[Run]) -> None:
+    max_path_name = max(len(run.path.name) for run in runs)
+    for run in runs:
+        std = f"rpts: {run.repeats}  std {run.std:0.4f}" if run.repeats > 1 else ''
+        print(f"{run.accuracy:0.2%} . {run.path.name:{max_path_name}} {std}")

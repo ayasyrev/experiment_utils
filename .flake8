@@ -1,0 +1,7 @@
+[flake8]
+select = C,E,F,W
+max-complexity = 10
+max-line-length = 120
+
+application-import-names = experiment_utils, tests
+import-order-style = google

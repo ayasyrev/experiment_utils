@@ -9,7 +9,7 @@ from omegaconf import OmegaConf, DictConfig
 
 
 def stat(results: List[float]) -> Tuple[float]:
-    """Returm mean, std from list of floats."""
+    """Returm tuple(mean, std) from list of floats."""
     stat = np.array(results)
     return stat.mean(), stat.std()
 
