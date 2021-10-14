@@ -1,7 +1,6 @@
 import warnings
 
 import hydra
-import torch
 from fastai.basics import (CategoryBlock, DataBlock, GrandparentSplitter,
                            Learner, accuracy, get_image_files,
                            parent_label)
