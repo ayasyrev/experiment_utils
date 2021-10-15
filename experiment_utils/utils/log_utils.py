@@ -179,8 +179,29 @@ def get_cfg(path: Union[str, PosixPath], flat: bool = False) -> Union[DictConfig
     return cfg
 
 
-def print_runs(runs: List[Run]) -> None:
-    max_path_name = max(len(run.path.name) for run in runs)
+def print_runs(runs: List[Run], thresold: float = 0) -> None:
+    len_runs = len(runs)
+    if thresold:
+        runs = [run for run in runs if run.accuracy > thresold]
+        print(f"{len_runs} log dirs, print {len(runs)} with acc > {thresold:.2%}")
+    if len(runs) == 0:
+        print(f"No run with thresold {thresold}")
+    else:
+        max_path_name = max(len(run.path.name) for run in runs)
+        for run in runs:
+            if run.accuracy > thresold:
+                std = f"rpts: {run.repeats}  std {run.std:0.4f}" if run.repeats > 1 else ''
+                print(f"{run.accuracy:0.2%} . {run.path.name:{max_path_name}} {std}")
+
+
+def rename_runs(runs: List[Run], thresold: float = 0) -> None:
+    runs = [run for run in runs if run.accuracy > thresold]
     for run in runs:
-        std = f"rpts: {run.repeats}  std {run.std:0.4f}" if run.repeats > 1 else ''
-        print(f"{run.accuracy:0.2%} . {run.path.name:{max_path_name}} {std}")
+        cfg = get_cfg(run.path)
+        if cfg.run.repeat != run.repeats:
+            print(f"not completed - {run.path} rep: {cfg.run.repeat}, res {len(run.results)}")
+        else:
+            if "__" not in run.path.name:
+                new_name = run.path.parent / f"{run.path.name}__{int(run.accuracy * 10000)}"
+                print(new_name)
+                run.path.rename(new_name)
