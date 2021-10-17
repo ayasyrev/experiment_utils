@@ -179,19 +179,34 @@ def get_cfg(path: Union[str, PosixPath], flat: bool = False) -> Union[DictConfig
     return cfg
 
 
-def print_runs(runs: List[Run], thresold: float = 0) -> None:
+def print_runs(runs: List[Run], thresold: float = 0, limit: int =0) -> None:
+    """Print results.
+
+    Args:
+        runs (List[Run]): List of runs.
+        thresold (float, optional): Print only runs with accuracy more than thresold. Defaults to 0.
+        limit (int, optional): Number of runs to print. Defaults to 0, print all.
+    """
     len_runs = len(runs)
     if thresold:
         runs = [run for run in runs if run.accuracy > thresold]
-        print(f"{len_runs} log dirs, print {len(runs)} with acc > {thresold:.2%}")
+
     if len(runs) == 0:
         print(f"No run with thresold {thresold}")
     else:
+        thresolded = f", {len(runs)} with acc > {thresold:.2%}" if thresold else ''
+        if limit:
+            lines_to_print = f", print limited to {limit}." if limit < len(runs) else ''
+            runs = runs[:limit]
+        else:
+            lines_to_print = ''
+        print(f"{len_runs} log dirs{thresolded}{lines_to_print}")
+
         max_path_name = max(len(run.path.name) for run in runs)
+
         for run in runs:
-            if run.accuracy > thresold:
-                std = f"rpts: {run.repeats}  std {run.std:0.4f}" if run.repeats > 1 else ''
-                print(f"{run.accuracy:0.2%} . {run.path.name:{max_path_name}} {std}")
+            std = f"rpts: {run.repeats}  std {run.std:0.4f}" if run.repeats > 1 else ''
+            print(f"{run.accuracy:0.2%} . {run.path.name:{max_path_name}} {std}")
 
 
 def rename_runs(runs: List[Run], thresold: float = 0) -> None:
