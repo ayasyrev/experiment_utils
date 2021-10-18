@@ -153,8 +153,14 @@ def calc_mean(filenames: List[PosixPath]) -> Tuple[float]:
 def get_runs(path: Union[str, PosixPath], sort: bool = True, max_is_best: bool = True) -> List[Run]:
     log_dirs = get_log_dirs(path)
     runs = [Run(fn) for fn in log_dirs]
+    sorted_runs = sorted(runs, key=lambda x: x.accuracy, reverse=max_is_best)
     if sort:
-        runs.sort(key=lambda x: x.accuracy, reverse=max_is_best)
+        return sorted_runs
+        # runs.sort(key=lambda x: x.accuracy, reverse=max_is_best)
+    for num, run in enumerate(sorted_runs):
+        run.num = num
+    # runs.sort(key=lambda run: run.path.stat().st_ctime, reverse=True)
+    runs.sort(key=lambda run: run.path.stat().st_ctime, reverse=False)
     return runs
 
 
@@ -179,7 +185,16 @@ def get_cfg(path: Union[str, PosixPath], flat: bool = False) -> Union[DictConfig
     return cfg
 
 
-def print_runs(runs: List[Run], thresold: float = 0, limit: int =0) -> None:
+def filter_runs(runs: List[Run], thresold: float = 0) -> List[Run]:
+    return [run for run in runs if run.accuracy > thresold]
+
+    # if len(runs) == 0:
+    #     print(f"No run with thresold {thresold}")
+    # else:
+    #     thresolded = f", {len(runs)} with acc > {thresold:.2%}" if thresold else ''
+
+
+def print_runs(runs: List[Run], header: str = None, limit: int = 0, print_num: bool = False) -> None:
     """Print results.
 
     Args:
@@ -187,26 +202,22 @@ def print_runs(runs: List[Run], thresold: float = 0, limit: int =0) -> None:
         thresold (float, optional): Print only runs with accuracy more than thresold. Defaults to 0.
         limit (int, optional): Number of runs to print. Defaults to 0, print all.
     """
-    len_runs = len(runs)
-    if thresold:
-        runs = [run for run in runs if run.accuracy > thresold]
-
-    if len(runs) == 0:
-        print(f"No run with thresold {thresold}")
+    if limit:
+        lines_to_print = f", print limited to {limit}." if limit < len(runs) else ''
+        runs = runs[:limit]
     else:
-        thresolded = f", {len(runs)} with acc > {thresold:.2%}" if thresold else ''
-        if limit:
-            lines_to_print = f", print limited to {limit}." if limit < len(runs) else ''
-            runs = runs[:limit]
+        lines_to_print = ''
+
+    print(f"{header}{lines_to_print}")
+    max_path_name = max(len(run.path.name) for run in runs)
+
+    for run in runs:
+        std = f"rpts: {run.repeats}  std {run.std:0.4f}" if run.repeats > 1 else ''
+        if print_num and hasattr(run, 'num'):
+            num = f". #{run.num}"
         else:
-            lines_to_print = ''
-        print(f"{len_runs} log dirs{thresolded}{lines_to_print}")
-
-        max_path_name = max(len(run.path.name) for run in runs)
-
-        for run in runs:
-            std = f"rpts: {run.repeats}  std {run.std:0.4f}" if run.repeats > 1 else ''
-            print(f"{run.accuracy:0.2%} . {run.path.name:{max_path_name}} {std}")
+            num = ''
+        print(f"{run.accuracy:0.2%} . {run.path.name:{max_path_name}} {num} {std}")
 
 
 def rename_runs(runs: List[Run], thresold: float = 0) -> None:
