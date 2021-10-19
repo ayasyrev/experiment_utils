@@ -1,5 +1,5 @@
 _target_: experiment_utils.utils.hydra_utils.load_args_list
 defaults:
     # - empty
-  - /data/transforms/RandomResizedCrop@1
-  - /data/transforms/FlipItem@2
+  - /data/transforms/RandomResizedCrop@RandomResizedCrop
+  - /data/transforms/FlipItem@FlipItem

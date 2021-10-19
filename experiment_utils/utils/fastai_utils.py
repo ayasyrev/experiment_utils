@@ -1,5 +1,4 @@
 from functools import partial
-from typing import List
 
 import kornia
 import numpy as np
@@ -24,7 +23,6 @@ def convert_MP_to_blurMP(model, layer_type_old):
     return model
 
 
-
 sched_dict = {
     'lin': SchedLin,
     'cos': SchedCos
@@ -47,7 +45,6 @@ def fit_anneal_warmap(
         anneal = partial(SchedPoly, power=power)
     else:
         anneal = sched_dict[annealing_type]
-        # print('not implemented')
     if warmup_type == 'poly':
         warm = partial(SchedPoly, power=power)
     else:

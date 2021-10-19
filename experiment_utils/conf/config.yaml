@@ -1,5 +1,5 @@
 defaults: 
-  - seed: set_seed
+  - seed: deterministic
   - data: imagenette-320
   - model: xseresnext50maxblur  # resnet18
   - model_load: no_load
@@ -21,10 +21,6 @@ train:
   epochs: 5
   lr: 0.008
   wd: 0.01
-
-seed:
-  torch_deterministic: True
-  torch_benchmark: False
 
 data:
   size: 128
