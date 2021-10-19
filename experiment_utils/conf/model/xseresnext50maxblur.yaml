@@ -2,7 +2,7 @@ name: xseResNeXt50maxblur
 
 defaults:
   - xresnet50
-  - se_module: SEModuleConv
+  - se_module: SEModuleConvMish
   - override act_fn: Mish
   - override pool: MaxBlurPool2D
   - override pool@stem_pool: MaxBlurPool2D

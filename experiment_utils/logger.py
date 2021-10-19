@@ -53,7 +53,7 @@ class Logger:
         self.log_result(name_suffix=name_suffix)
         if self.cfg.run.log_loss:
             self.log_values(self.learn.recorder.losses, f"losses_{name_suffix}")
-        print(50 * '=')
+        print(50 * '-')
         if self.cfg.model_save.model_save:
             fn = (f"{self.learn.model._get_name()}_{self.cfg.date_time}_{name_suffix}"
                   if self.cfg.model_save.file_name == 'model'
@@ -83,6 +83,8 @@ class Logger:
         """
         mean, std = stat(self.results)
         print(f"mean: {mean:0.2%} std: {std:0.4f}")
+        print(50 * '=')
+
         file_name = f"mean_{int(mean*10000)}_std_{int(std*10000):04}.csv"
         with open(self.log_dir / file_name, 'w') as f:
             for result in self.results:
