@@ -7,7 +7,8 @@ from rich import print
 
 
 def show_runs(dir_name: Optional[str] = typer.Argument(None),
-              rename: bool = typer.Option(False),
+              rename: bool = typer.Option(False, '-R',
+                                          help='Rename directory with log with accuracy, if thresold - only filtered.'),
               thresold: float = typer.Option(0, '-t', help='Print only runs with accurasy more than `thresold`'),
               limit: int = typer.Option(0, '-l', help='Print only `limit` lines.'),
               last: bool = typer.Option(False)):
