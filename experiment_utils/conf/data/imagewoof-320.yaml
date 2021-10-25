@@ -1,4 +1,4 @@
 # @package _group_
 defaults:
   - imagenette
-data_dir: /Data/imagewoo2-320
+data_dir: /Data/imagewoof2-320
