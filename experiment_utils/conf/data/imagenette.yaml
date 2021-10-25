@@ -5,4 +5,3 @@ defaults:
 data_dir: /Data/imagenette2
 num_classes: 10
 size: 192
-min_scale: 0.35
