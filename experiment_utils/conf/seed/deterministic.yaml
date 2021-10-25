@@ -1,4 +1,5 @@
 defaults:
-  - set_seed
+  - default
+
 torch_benchmark: False
 torch_deterministic: True
