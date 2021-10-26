@@ -4,12 +4,12 @@ function: experiment_utils.utils.fastai_utils.fit_anneal_warmap
 defaults:
   - cbs: empty_list
 
-pct_warmup: 0.05  # 0.
-div_warmup: 10  # 1
-warmup_type: cos
+pct_warmup: 0.01
+div_warmup: 100
+warmup_type: lin
 
 annealing_type: cos
 div_final: 1e5
 pct_start: 0.75
 wd: 0
-power: 1
+# power: 1 # add +power if use "poly" annealing
