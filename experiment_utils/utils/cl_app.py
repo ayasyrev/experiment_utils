@@ -7,7 +7,8 @@ from rich import print
 
 
 def show_runs(dir_name: Optional[str] = typer.Argument(None),
-              rename: bool = typer.Option(False),
+              rename: bool = typer.Option(False, '-R',
+                                          help='Rename directory with log with accuracy, if thresold - only filtered.'),
               thresold: float = typer.Option(0, '-t', help='Print only runs with accurasy more than `thresold`'),
               limit: int = typer.Option(0, '-l', help='Print only `limit` lines.'),
               last: bool = typer.Option(False)):
@@ -23,9 +24,8 @@ def show_runs(dir_name: Optional[str] = typer.Argument(None),
         typer.echo(f"No logs in dir: {dir_name}")
         raise typer.Exit()
     if last:
-        # print_runs(runs, header=f"last dirs", limit=20, print_num=True)
         limit = limit or 20
-        print_runs(runs[-limit:], header=f"last dirs", limit=limit, print_num=True)
+        print_runs(runs[-limit:], header="last dirs", limit=limit, print_num=True)
         raise typer.Exit()
     if thresold:
         runs = filter_runs(runs, thresold)
