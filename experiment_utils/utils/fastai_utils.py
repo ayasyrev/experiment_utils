@@ -36,6 +36,7 @@ def fit_anneal_warmap(
     cbs=None, reset_opt=False, wd=None, power=1
 ):
     "Fit `self.model` for `n_cycles` with warmap and annealing."
+    # will be deprecated in favor of renamed version - fit_warmap_anneal, than modified universal version
     if self.opt is None:
         self.create_opt()
     self.opt.set_hyper('lr', self.lr if lr is None else lr)
@@ -51,5 +52,34 @@ def fit_anneal_warmap(
         warm = sched_dict[warmup_type]
     pcts = [pct_warmup, pct_start - pct_warmup, 1 - pct_start]
     scheds = [warm(lr / div_warmup, lr), SchedLin(lr, lr), anneal(lr, lr / div_final)]
+    scheds = {'lr': combine_scheds(pcts, scheds)}
+    self.fit(epochs, cbs=ParamScheduler(scheds) + L(cbs), reset_opt=reset_opt, wd=wd)
+
+
+# renamed version of fit_anneal_warmap. Previos version leaved for compatibilites, will be removed later.
+# Renamed argumets.
+def fit_warmap_anneal(
+    self: Learner, epochs, lr=None,
+    warmup_pct=0., warmup_div=1, warmup_type='cos',
+    anneal_pct=0.75, anneal_div=1e5, anneal_type='cos',
+    cbs=None, reset_opt=False, wd=None, power=1
+):
+    """Fit 'self.model' for 'n_cycles' with warmap and annealing.
+    default - no warmap and 'cos' annealing start at 0.75"""
+    if self.opt is None:
+        self.create_opt()
+    self.opt.set_hyper('lr', self.lr if lr is None else lr)
+    lr = np.array([h['lr'] for h in self.opt.hypers])
+
+    if anneal_type == 'poly':
+        anneal = partial(SchedPoly, power=power)
+    else:
+        anneal = sched_dict[anneal_type]
+    if warmup_type == 'poly':
+        warm = partial(SchedPoly, power=power)
+    else:
+        warm = sched_dict[warmup_type]
+    pcts = [warmup_pct, anneal_pct - warmup_pct, 1 - anneal_pct]
+    scheds = [warm(lr / warmup_div, lr), SchedLin(lr, lr), anneal(lr, lr / anneal_div)]
     scheds = {'lr': combine_scheds(pcts, scheds)}
     self.fit(epochs, cbs=ParamScheduler(scheds) + L(cbs), reset_opt=reset_opt, wd=wd)

@@ -1,4 +1,4 @@
 num_workers: 4
-batch_size: 64
+batch_size: ${data.batch_size}
 drop_last: True
 pin_memory: False
