@@ -5,3 +5,4 @@ defaults:
 data_dir: /Data/imagenette2
 num_classes: 10
 size: 192
+batch_size: 64

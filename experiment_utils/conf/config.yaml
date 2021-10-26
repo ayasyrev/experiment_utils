@@ -24,8 +24,8 @@ train:
 
 data:
   size: 128
+  batch_size: 32
   dataloader:
-    batch_size: 32
     num_workers: 4
 
 hydra:
