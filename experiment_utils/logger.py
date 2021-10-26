@@ -1,5 +1,6 @@
 import csv
 from pathlib import Path
+from typing import List
 from experiment_utils.utils.utils import stat
 import time
 
@@ -47,7 +48,7 @@ class Logger:
         print(f"acc: {acc:0.2%}")
         train_time = time.time() - self.start_time
         print(f"train time: {format_time(train_time)}")
-        name_suffix = str(int(acc * 10000))
+        name_suffix = str(int(round(acc, 4) * 10000))
         if self.cfg.run.repeat > 1:
             name_suffix = f"{self.repeat}_{name_suffix}"
         self.log_result(name_suffix=name_suffix)
@@ -76,7 +77,7 @@ class Logger:
             writer.writerows(self.learn.recorder.values)
 
     def log_resume(self) -> None:
-        """Write results to file
+        """Write summary for results to file
 
         Args:
             results (List[float]): List of results.
@@ -91,7 +92,13 @@ class Logger:
                 f.write(f"{result}\n")
             f.write(f"#\n{mean}\n{std}")
 
-    def log_values(self, values, name) -> None:
-        """Write lrs to csv file"""
+    def log_values(self, values: List[float], name: str) -> None:
+        """Write values to csv file
+
+        Args:
+            values (List[float]): List of floats to write.
+            name (str): Name for file.
+        """
+        
         with open(self.log_dir / f"{name}.csv", "w") as f:
             f.writelines(map(lambda i: f"{i}\n", values))
