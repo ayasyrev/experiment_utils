@@ -86,7 +86,7 @@ class Logger:
         print(f"mean: {mean:0.2%} std: {std:0.4f}")
         print(50 * '=')
 
-        file_name = f"mean_{int(mean*10000)}_std_{int(std*10000):04}.csv"
+        file_name = f"mean_{int(mean*10000)}_std_{int(round(std, 4)*10000):04}.csv"
         with open(self.log_dir / file_name, 'w') as f:
             for result in self.results:
                 f.write(f"{result}\n")
@@ -99,6 +99,6 @@ class Logger:
             values (List[float]): List of floats to write.
             name (str): Name for file.
         """
-        
+
         with open(self.log_dir / f"{name}.csv", "w") as f:
             f.writelines(map(lambda i: f"{i}\n", values))

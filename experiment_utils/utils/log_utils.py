@@ -151,15 +151,23 @@ def calc_mean(filenames: List[PosixPath]) -> Tuple[float]:
 
 
 def get_runs(path: Union[str, PosixPath], sort: bool = True, max_is_best: bool = True) -> List[Run]:
+    """Read Runs from logs.
+
+    Args:
+        path (Union[str, PosixPath]): Path for log dirs.
+        sort (bool, optional): Sort list with result or not.. Defaults to True.
+        max_is_best (bool, optional): Criteria for sort. Defaults to True, max is best.
+
+    Returns:
+        List[Run]: List of Runs.
+    """
     log_dirs = get_log_dirs(path)
     runs = [Run(fn) for fn in log_dirs]
     sorted_runs = sorted(runs, key=lambda x: x.accuracy, reverse=max_is_best)
     if sort:
         return sorted_runs
-        # runs.sort(key=lambda x: x.accuracy, reverse=max_is_best)
     for num, run in enumerate(sorted_runs):
         run.num = num
-    # runs.sort(key=lambda run: run.path.stat().st_ctime, reverse=True)
     runs.sort(key=lambda run: run.path.stat().st_ctime, reverse=False)
     return runs
 
@@ -186,12 +194,16 @@ def get_cfg(path: Union[str, PosixPath], flat: bool = False) -> Union[DictConfig
 
 
 def filter_runs(runs: List[Run], thresold: float = 0) -> List[Run]:
-    return [run for run in runs if run.accuracy > thresold]
+    """Filter runs for run with accuracy less than thresold
 
-    # if len(runs) == 0:
-    #     print(f"No run with thresold {thresold}")
-    # else:
-    #     thresolded = f", {len(runs)} with acc > {thresold:.2%}" if thresold else ''
+    Args:
+        runs (List[Run]): List of Runs.
+        thresold (float, optional): Thresold for filter. Defaults to 0.
+
+    Returns:
+        List[Run]: List of runs.
+    """
+    return [run for run in runs if run.accuracy > thresold]
 
 
 def print_runs(runs: List[Run], header: str = None, limit: int = 0, print_num: bool = False) -> None:
@@ -228,5 +240,5 @@ def rename_runs(runs: List[Run], thresold: float = 0) -> None:
             print(f"not completed - {run.path} rep: {cfg.run.repeat}, res {len(run.results)}")
         else:
             if "__" not in run.path.name:
-                new_name = run.path.parent / f"{run.path.name}__{int(run.accuracy * 10000)}"
+                new_name = run.path.parent / f"{run.path.name}__{int(round(run.accuracy, 4) * 10000)}"
                 run.path.rename(new_name)
