@@ -2,7 +2,7 @@ import csv
 from pathlib import Path, PosixPath
 from typing import List, Tuple, Union
 
-from experiment_utils.utils.utils import print_stat, stat
+from experiment_utils.utils.utils import print_stat, show_cfg, stat
 from matplotlib import pyplot as plt
 from omegaconf import OmegaConf
 from omegaconf.dictconfig import DictConfig
@@ -30,6 +30,7 @@ class Run:
         self.repeats = len(self.result_files)
         self._results = None
         self._metrics = None
+        self._cfg = None
         if self.repeats == 1:
             self.accuracy = read_accuracy_from_file(self.result_files[0])
         else:
@@ -116,6 +117,15 @@ class Run:
     def result(self) -> str:
         std = f"std {self.std:0.4f}" if self.repeats > 1 else ""
         return f"{self.accuracy:.2%} {std}"
+
+    @property
+    def cfg(self) -> DictConfig:
+        if self._cfg is None:
+            self._cfg = get_cfg(self.path)
+        return self._cfg
+
+    def show_cfg(self) -> None:
+        show_cfg(self.cfg)
 
 
 def get_log_dirs(path: Union[str, List[str]]) -> List[PosixPath]:
