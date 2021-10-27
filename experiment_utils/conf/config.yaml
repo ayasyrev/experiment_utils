@@ -6,7 +6,7 @@ defaults:
   - model_save: no_save
   - opt_fn: ranger_fastai
   - loss_fn: LabelSmoothingCrossEntropy
-  - train: fit_flat_cos
+  - train: fit_anneal
   - _self_
 
 run:

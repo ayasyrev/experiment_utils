@@ -47,7 +47,7 @@ class Logger:
         self.results.append(acc)
         print(f"acc: {acc:0.2%}")
         train_time = time.time() - self.start_time
-        print(f"train time: {format_time(train_time)}")
+        print(f"run time: {format_time(train_time)}")
         name_suffix = str(int(round(acc, 4) * 10000))
         if self.cfg.run.repeat > 1:
             name_suffix = f"{self.repeat}_{name_suffix}"

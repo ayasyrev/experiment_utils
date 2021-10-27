@@ -5,7 +5,10 @@ import numpy as np
 from fastai.basics import Learner
 from fastai.callback.all import (ParamScheduler, SchedCos, SchedLin, SchedPoly,
                                  combine_scheds)
+from fastai.callback.schedule import (  # noqa F401 import lr_find for patch Learner
+    SuggestionMethod, lr_find)
 from fastcore.all import L
+from torch import tensor
 
 
 def convert_MP_to_blurMP(model, layer_type_old):
@@ -83,3 +86,35 @@ def fit_warmap_anneal(
     scheds = [warm(lr / warmup_div, lr), SchedLin(lr, lr), anneal(lr, lr / anneal_div)]
     scheds = {'lr': combine_scheds(pcts, scheds)}
     self.fit(epochs, cbs=ParamScheduler(scheds) + L(cbs), reset_opt=reset_opt, wd=wd)
+
+
+def lrfind(learn: Learner, num_it: int = 100, **kwargs):
+    suggest_methods = ['valley', 'slide', 'minimum', 'steep']
+    suggest_funcs = (
+        SuggestionMethod.Valley,
+        SuggestionMethod.Slide,
+        SuggestionMethod.Minimum,
+        SuggestionMethod.Steep)
+    # result = learn.lr_find(suggest_funcs=suggest_funcs)
+    learn.lr_find(num_it=num_it)
+    lrs, losses = tensor(learn.recorder.lrs[num_it // 10:-5]), tensor(learn.recorder.losses[num_it // 10:-5])
+    _suggestions = []
+    for func in suggest_funcs:
+        _suggestions.append(func(lrs, losses, num_it))
+    lrs, points = [], []
+    for lr, point in _suggestions:
+        lrs.append(lr)
+        points.append(point)
+
+    print(20 * '-')
+    print('Sugeested lrs:')
+    # for num, res in enumerate(result):
+    idx_list = []
+    for (val, idx), name in zip(points, suggest_methods):
+        # print(f"{suggest_methods[num]:10}: {res:0.6f}")
+        print(f"{name:10}: {val:0.6f}")
+        idx_list.append(float(idx))
+    print(20 * '-')
+    learn.recorder.final_record = [0]  # for compatibility wyth logger.
+    learn.recorder.metric_names = [''] + suggest_methods + ['']
+    learn.recorder.values = [[*lrs], [*idx_list]]

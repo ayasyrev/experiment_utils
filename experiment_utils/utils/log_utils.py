@@ -10,8 +10,17 @@ from pt_utils.utils import flat_dict
 from rich import print
 
 
-def get_result_files(path: PosixPath) -> List[PosixPath]:
-    return [fn for fn in path.iterdir() if fn.name.startswith('log_res')]
+def get_result_files(path: PosixPath, name_pattern: str = 'log_res') -> List[PosixPath]:
+    """Return list of files for givet name pattern.
+
+    Args:
+        path (PosixPath): Directory name
+        name_pattern (str, optional): Pattern for name. Defaults to 'log_res'.
+
+    Returns:
+        List[PosixPath]: List of file names as PosixPath.
+    """
+    return [fn for fn in path.iterdir() if fn.name.startswith(name_pattern)]
 
 
 class Run:
@@ -40,6 +49,26 @@ class Run:
     def plot_lr(self) -> None:
         lrs = read_values_from_file(self.path / 'lrs.csv')
         plt.plot(lrs)
+
+    def lr_find(self, skip_end=5) -> None:
+        lrs = read_values_from_file(self.path / 'lrs.csv')[:-skip_end]
+        loss_fn = get_result_files(self.path, name_pattern='losses')[0]
+        losses = read_values_from_file(loss_fn)[:-skip_end]
+        res = read_result_from_file(self.path / self.result_files[0])
+        suggests = list(res[0].keys())
+        points = [(res[0][name], res[1][name]) for name in suggests]
+        colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][1:]
+        print('Suggested lrs:')
+        for suggest, point in zip(suggests, points):
+            print(f"{suggest:10} {point[0]:0.6f}")
+        fig, ax = plt.subplots(1, 1)
+        ax.plot(lrs, losses)
+        ax.set_ylabel("Loss")
+        ax.set_xlabel("Learning Rate")
+        ax.set_xscale('log')
+        for (val, idx), name, color in zip(points, suggests, colors):
+            ax.plot(val, idx, 'ro', label=name, c=color)
+        ax.legend()
 
     def plot_metrics(self, metric: Union[str, List[str]] = None, stack=False) -> None:
         if metric is None:
@@ -139,7 +168,11 @@ def read_values_from_file(filename: Union[str, PosixPath]) -> List[float]:
 
 def read_accuracy_from_file(filename: PosixPath) -> float:
     data = read_result_from_file(filename)
-    return data[-1]['accuracy']
+    try:
+        accuracy = data[-1]['accuracy']
+    except:  # noqa E722 todo add exeption
+        accuracy = 0
+    return accuracy
 
 
 def calc_mean(filenames: List[PosixPath]) -> Tuple[float]:
