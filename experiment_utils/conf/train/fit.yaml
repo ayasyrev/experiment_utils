@@ -1,0 +1,7 @@
+_target_: experiment_utils.utils.hydra_utils.load_partial_func
+function: experiment_utils.utils.fastai_utils.fit
+
+defaults:
+  - cbs: empty_list
+
+wd: 0

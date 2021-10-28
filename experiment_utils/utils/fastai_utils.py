@@ -118,3 +118,9 @@ def lrfind(learn: Learner, num_it: int = 100, **kwargs):
     learn.recorder.final_record = [0]  # for compatibility wyth logger.
     learn.recorder.metric_names = [''] + suggest_methods + ['']
     learn.recorder.values = [[*lrs], [*idx_list]]
+
+
+def fit(self: Learner, epochs, lr, cbs, reset_opt=False, wd=None):
+    """Default Fit 'self.model' for 'n_cycles' with 'lr' using 'cbs'. Optionally 'reset_opt'.
+    For run from script with hydra config"""
+    self.fit(epochs, lr, cbs=L(cbs), reset_opt=reset_opt, wd=wd)
