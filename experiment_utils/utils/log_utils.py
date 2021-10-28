@@ -152,8 +152,13 @@ def read_mean_from_file(filename: PosixPath) -> Tuple[float]:
     """Read mean, std from file with results."""
     with open(filename, 'r') as f:
         lines = f.readlines()
-    mean = float(lines[-2].strip())
-    std = float(lines[-1].strip())
+    try:
+        mean = float(lines[-2].strip())
+        std = float(lines[-1].strip())
+    except Exception:
+        print(Exception)
+        print(filename)
+        mean, std = 0, 0
     return mean, std
 
 
