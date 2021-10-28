@@ -56,7 +56,7 @@ class Logger:
             self.log_values(self.learn.recorder.losses, f"losses_{name_suffix}")
         print(50 * '-')
         if self.cfg.model_save.model_save:
-            fn = (f"{self.learn.model._get_name()}_{self.cfg.date_time}_{name_suffix}"
+            fn = (f"{self.learn.model._get_name()}_{self.cfg.run.date_time}_{name_suffix}"
                   if self.cfg.model_save.file_name == 'model'
                   else self.cfg.model_save.file_name)
             self.learn.save(fn, with_opt=self.cfg.model_save.with_opt)
