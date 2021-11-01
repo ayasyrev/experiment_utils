@@ -63,8 +63,11 @@ class Logger:
 
     def log_run(self) -> None:
         if self.cfg.run.log_lr:
-            self.log_values(self.learn.recorder.lrs, 'lrs')
-
+            if hasattr(self.learn.recorder, 'hps'):
+                for hp in self.learn.recorder.hps:
+                    self.log_values(self.learn.recorder.hps[hp], f"{hp}s")
+            else:
+                self.log_values(self.learn.recorder.lrs, 'lrs')
         if self.cfg.run.repeat > 1:
             self.log_resume()
 
