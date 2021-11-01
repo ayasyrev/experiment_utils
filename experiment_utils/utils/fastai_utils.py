@@ -32,14 +32,14 @@ sched_dict = {
 }
 
 
-def fit_anneal_warmap(
+def fit_anneal_warmup(
     self: Learner, epochs, lr=None,
     pct_warmup=0., div_warmup=1, warmup_type='cos',
     pct_start=0.75, div_final=1e5, annealing_type='cos',
     cbs=None, reset_opt=False, wd=None, power=1
 ):
-    "Fit `self.model` for `n_cycles` with warmap and annealing."
-    # will be deprecated in favor of renamed version - fit_warmap_anneal, than modified universal version
+    "Fit 'self.model' for 'n_cycles' with warmup and annealing."
+    # will be deprecated in favor of renamed version - fit_warmup_anneal, than modified universal version
     if self.opt is None:
         self.create_opt()
     self.opt.set_hyper('lr', self.lr if lr is None else lr)
@@ -59,16 +59,16 @@ def fit_anneal_warmap(
     self.fit(epochs, cbs=ParamScheduler(scheds) + L(cbs), reset_opt=reset_opt, wd=wd)
 
 
-# renamed version of fit_anneal_warmap. Previos version leaved for compatibilites, will be removed later.
+# renamed version of fit_anneal_warmup. Previos version leaved for compatibilites, will be removed later.
 # Renamed argumets.
-def fit_warmap_anneal(
+def fit_warmup_anneal(
     self: Learner, epochs, lr=None,
     warmup_pct=0., warmup_div=1, warmup_type='cos',
     anneal_pct=0.75, anneal_div=1e5, anneal_type='cos',
     cbs=None, reset_opt=False, wd=None, power=1
 ):
-    """Fit 'self.model' for 'n_cycles' with warmap and annealing.
-    default - no warmap and 'cos' annealing start at 0.75"""
+    """Fit 'self.model' for 'n_cycles' with warmup and annealing.
+    default - no warmup and 'cos' annealing start at 0.75"""
     if self.opt is None:
         self.create_opt()
     self.opt.set_hyper('lr', self.lr if lr is None else lr)

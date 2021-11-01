@@ -1,15 +1,15 @@
 _target_: experiment_utils.utils.hydra_utils.load_partial_func
-function: experiment_utils.utils.fastai_utils.fit_anneal_warmap
+function: experiment_utils.utils.fastai_utils.fit_warmup_anneal
 
 defaults:
   - cbs: empty_list
 
-pct_warmup: 0.01
-div_warmup: 100
+warmup_pct: 0.01
+warmup_div: 100
 warmup_type: lin
 
-annealing_type: cos
-div_final: 1e5
-pct_start: 0.75
+anneal_type: cos
+anneal_div: 1e5
+anneal_pct: 0.75
 wd: 0
 # power: 1 # add +power if use "poly" annealing
