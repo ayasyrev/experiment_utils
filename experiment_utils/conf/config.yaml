@@ -1,7 +1,8 @@
 defaults: 
   - seed: deterministic
   - data: imagenette-320
-  - model: xseresnext50maxblur  # resnet18
+  - dls: fastai_default
+  - model: resnet18
   - model_load: no_load
   - model_save: no_save
   - opt_fn: ranger_fastai

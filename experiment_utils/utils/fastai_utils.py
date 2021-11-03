@@ -2,11 +2,13 @@ from functools import partial
 
 import kornia
 import numpy as np
-from fastai.basics import Learner
+from fastai.basics import (CategoryBlock, DataBlock, GrandparentSplitter,
+                           Learner, get_image_files, parent_label)
 from fastai.callback.all import (ParamScheduler, SchedCos, SchedLin, SchedPoly,
                                  combine_scheds)
 from fastai.callback.schedule import (  # noqa F401 import lr_find for patch Learner
     SuggestionMethod, lr_find)
+from fastai.vision.all import ImageBlock
 from fastcore.all import L
 from torch import tensor
 
@@ -124,3 +126,18 @@ def fit(self: Learner, epochs, lr, cbs, reset_opt=False, wd=None):
     """Default Fit 'self.model' for 'n_cycles' with 'lr' using 'cbs'. Optionally 'reset_opt'.
     For run from script with hydra config"""
     self.fit(epochs, lr, cbs=L(cbs), reset_opt=reset_opt, wd=wd)
+
+
+def get_dataloaders(ds_path, bs, num_workers,
+                    item_tfms, batch_tfms):
+
+    dblock = DataBlock(
+        blocks=(ImageBlock, CategoryBlock),
+        splitter=GrandparentSplitter(valid_name='val'),
+        get_items=get_image_files,
+        get_y=parent_label,
+        item_tfms=item_tfms,
+        batch_tfms=batch_tfms
+    )
+    return dblock.dataloaders(
+        ds_path, path=ds_path, bs=bs, num_workers=num_workers)
