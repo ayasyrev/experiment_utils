@@ -1,0 +1,4 @@
+_target_: pt_utils.transforms.base_transforms.val_transforms
+
+image_size: ${data.size}
+extra_size: 24

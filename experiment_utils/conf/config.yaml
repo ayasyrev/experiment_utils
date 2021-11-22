@@ -33,5 +33,6 @@ hydra:
   run:
     dir: /Logs/Hydra/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
   sweep:
-    dir: /Logs/Hydra/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    # dir: /Logs/Hydra/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    dir: /Logs/Hydra/run/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d}/${now:%H-%M-%S}
     subdir: ${hydra.job.num}

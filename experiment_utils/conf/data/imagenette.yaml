@@ -1,5 +1,6 @@
-defaults:
-  - /dataloader/base_dl@_global_.data._group_
+# defaults:
+  # - /dataloader/base_dl@_global_.data._group_
+  # - /dataloader/base_dl@dataloader
 data_dir: /Data/imagenette2
 num_classes: 10
 size: 192

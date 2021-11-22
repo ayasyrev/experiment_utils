@@ -1,0 +1,6 @@
+_target_: pt_utils.data.image_folder_dataset.ImageFolderDataset
+
+root: ${data.data_dir}
+# transform: 
+# loader: Callable = default_loader,
+limit_dataset: 0

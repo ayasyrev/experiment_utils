@@ -1,0 +1,12 @@
+_target_: experiment_utils.utils.hydra_utils.load_args_list
+defaults:
+  - /dls/pt_transforms/resize@resize
+  - /dls/pt_transforms/CenterCrop@CenterCrop
+  - /dls/pt_transforms/ToTensor@ToTensor
+  - /dls/pt_transforms/normalize@normalize
+
+resize:
+  extra_size: 24
+  # size 128 - 24
+  # size 192 - 32
+  # size 256 - 40
