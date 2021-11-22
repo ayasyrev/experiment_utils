@@ -1,0 +1,8 @@
+# _target_: experiment_utils.utils.fastai_utils.dls_from_pytorch
+
+defaults:
+  - pt_dls
+  - override val_tfms: to_tensor
+
+val_data_path: ${data.data_dir}/val_${data.size}
+image_backend: 'pil'  # 'accimage'

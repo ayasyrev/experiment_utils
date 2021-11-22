@@ -1,0 +1,9 @@
+defaults:
+  - item_tfms: RandomResizedCrop_FlipItem
+  - batch_tfms: empty_list
+
+_target_: experiment_utils.utils.fastai_utils.get_dataloaders
+
+ds_path: ${data.data_dir}
+bs: ${data.batch_size}
+num_workers: ${data.dataloader.num_workers}

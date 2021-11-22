@@ -1,7 +1,6 @@
-defaults:
-  - /dataloader/base_dl@_global_.data._group_
-  - item_tfms: RandomResizedCrop_FlipItem
-  - batch_tfms: empty_list
+# defaults:
+  # - /dataloader/base_dl@_global_.data._group_
+  # - /dataloader/base_dl@dataloader
 data_dir: /Data/imagenette2
 num_classes: 10
 size: 192

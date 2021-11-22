@@ -1,14 +1,24 @@
 from functools import partial
+from pathlib import PosixPath
+from typing import Callable, List, Union
 
 import kornia
 import numpy as np
-from fastai.basics import Learner
+from fastai.basics import (CategoryBlock, DataBlock, GrandparentSplitter,
+                           Learner, get_image_files, parent_label)
 from fastai.callback.all import (ParamScheduler, SchedCos, SchedLin, SchedPoly,
                                  combine_scheds)
 from fastai.callback.schedule import (  # noqa F401 import lr_find for patch Learner
     SuggestionMethod, lr_find)
+from fastai.data.core import DataLoaders
+from fastai.vision.all import ImageBlock
 from fastcore.all import L
+from pt_utils.data.image_folder_dataset import ImageFolderDataset
 from torch import tensor
+from torch.utils.data import DataLoader
+from torchvision import set_image_backend
+from torchvision import transforms as T
+from torchvision.datasets.folder import default_loader
 
 
 def convert_MP_to_blurMP(model, layer_type_old):
@@ -124,3 +134,85 @@ def fit(self: Learner, epochs, lr, cbs, reset_opt=False, wd=None):
     """Default Fit 'self.model' for 'n_cycles' with 'lr' using 'cbs'. Optionally 'reset_opt'.
     For run from script with hydra config"""
     self.fit(epochs, lr, cbs=L(cbs), reset_opt=reset_opt, wd=wd)
+
+
+def get_dataloaders(ds_path, bs, num_workers,
+                    item_tfms, batch_tfms):
+    """Return dataloaders for fastai learner.
+    As at fastai imagenette example.
+
+    Args:
+        ds_path (str): path to dataset.
+        bs (int): batch_size.
+        num_workers (int): number of workers for dataloader.
+        item_tfms (llist): list of fastai transforms for batch execution (on gpu).
+
+    Returns:
+        fastai dataloaders
+    """
+
+    dblock = DataBlock(
+        blocks=(ImageBlock, CategoryBlock),
+        splitter=GrandparentSplitter(valid_name='val'),
+        get_items=get_image_files,
+        get_y=parent_label,
+        item_tfms=item_tfms,
+        batch_tfms=batch_tfms
+    )
+    return dblock.dataloaders(
+        ds_path, path=ds_path, bs=bs, num_workers=num_workers)
+
+
+def dls_from_pytorch(
+    train_data_path: Union[str, PosixPath],
+    val_data_path: Union[str, PosixPath],
+    train_tfms: List,
+    val_tfms: List,
+    batch_size: int,
+    num_workers: int,
+    dataset_func: Callable = ImageFolderDataset,
+    loader: Callable = default_loader,
+    image_backend: str = 'pil',  # 'accimage'
+    limit_dataset: Union[bool, int] = False,
+    pin_memory: bool = True,
+    shuffle: bool = True,
+    shuffle_val: bool = False,
+    drop_last: bool = True,
+    drop_last_val: bool = False,
+    persistent_workers: bool = False
+):
+    """Return fastai dataloaders created from pytorch dataloaders.
+
+    Args:
+        train_data_path (Union[str, PosixPath]): path for train data.
+        val_data_path (Union[str, PosixPath]): path for validation data.
+        train_tfms (List): List of transforms for train data.
+        val_tfms (List): List of transforms for validation data
+        batch_size (int): Batch size
+        num_workers (int): Number of workers
+        dataset_func (Callable, optional): Funtion or class to create dataset. Defaults to ImageFolderDataset.
+        loader (Callable, optional): Function that load image. Defaults to default_loader.
+        image_backend (str, optional): Image backand to use. Defaults to 'pil'.
+        pin_memory (bool, optional): Use pin memory. Defaults to True.
+        shuffle (bool, optional): Use shuffle for train data. Defaults to True.
+        shuffle_val (bool, optional): Use shuffle for validation data. Defaults to False.
+        drop_last (bool, optional): If last batch not full drop it or not. Defaults to True.
+        drop_last_val (bool, optional): If last batch on validation data not full drop it or not. Defaults to False.
+        persistent_workers (bool, optional): Use persistante workers. Defaults to False.
+
+    Returns:
+        fastai dataloaders
+    """
+    set_image_backend(image_backend)
+    train_tfms = T.Compose(train_tfms)
+    val_tfms = T.Compose(val_tfms)
+    train_ds = dataset_func(root=train_data_path, transform=train_tfms, loader=loader, limit_dataset=limit_dataset)
+    val_ds = dataset_func(root=val_data_path, transform=val_tfms, loader=loader, limit_dataset=limit_dataset)
+
+    train_loader = DataLoader(dataset=train_ds, batch_size=batch_size,
+                              num_workers=num_workers, pin_memory=pin_memory, shuffle=shuffle,
+                              drop_last=drop_last, persistent_workers=persistent_workers)
+    val_loader = DataLoader(dataset=val_ds, batch_size=batch_size,
+                            num_workers=num_workers, pin_memory=pin_memory, shuffle=shuffle_val,
+                            drop_last=drop_last_val, persistent_workers=persistent_workers)
+    return DataLoaders(train_loader, val_loader)

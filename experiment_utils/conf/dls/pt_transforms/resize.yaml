@@ -1,0 +1,3 @@
+_target_: pt_utils.transforms.base_transforms.resize
+size: ${data.size}
+extra_size: 0

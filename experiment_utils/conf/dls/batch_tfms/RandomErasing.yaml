@@ -1,4 +1,4 @@
 _target_: experiment_utils.utils.hydra_utils.load_args_list
 
 defaults:
-  - /data/transforms/RandomErasing@1
+  - /dls/transforms/RandomErasing@RandomErasing

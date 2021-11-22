@@ -1,0 +1,3 @@
+_target_: pt_utils.transforms.base_transforms.train_transforms
+image_size: ${data.size}
+train_img_scale: [0.35, 1]

@@ -1,0 +1,4 @@
+_target_: experiment_utils.utils.hydra_utils.load_args_list
+defaults:
+  - /dls/pt_transforms/ToTensor@ToTensor
+  - /dls/pt_transforms/normalize@normalize

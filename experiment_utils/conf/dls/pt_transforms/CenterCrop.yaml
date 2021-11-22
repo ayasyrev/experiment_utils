@@ -1,0 +1,2 @@
+_target_: torchvision.transforms.CenterCrop
+size: ${data.size}
