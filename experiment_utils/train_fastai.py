@@ -11,18 +11,16 @@ fastprogress.MAX_COLS = 80
 warnings.filterwarnings("ignore")
 
 
-def get_learner(cfg):
-    '''Return fastai Learner from cfg'''
+def get_learner(cfg: DictConfig) -> Learner:
+    """Return fastai Learner from cfg"""
 
     dls = hydra.utils.instantiate(cfg.dls)
-    model = hydra.utils.instantiate(cfg.model, _convert_='all')
+    model = hydra.utils.instantiate(cfg.model, _convert_="all")
     opt_fn = hydra.utils.call(cfg.opt_fn)
     loss_fn = hydra.utils.instantiate(cfg.loss_fn)
-    learn = Learner(dls=dls,
-                    model=model,
-                    opt_func=opt_fn,
-                    metrics=[accuracy],
-                    loss_func=loss_fn)
+    learn = Learner(
+        dls=dls, model=model, opt_func=opt_fn, metrics=[accuracy], loss_func=loss_fn
+    )
 
     if cfg.model_load.model_load:
         learn.load(file=cfg.model_load.file_name, with_opt=cfg.model_load.with_opt)
@@ -33,7 +31,7 @@ def get_learner(cfg):
 def train(cfg: DictConfig) -> None:
     logger = Logger(cfg)
 
-    for repeat in range(cfg.run.repeat):
+    for repeat in range(cfg.repeat):
         hydra.utils.call(cfg.seed)
         learn = get_learner(cfg)
 

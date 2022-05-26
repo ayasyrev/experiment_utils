@@ -1,0 +1,3 @@
+_target_: kornia.filters.BlurPool2D
+kernel_size: 3
+stride: 2

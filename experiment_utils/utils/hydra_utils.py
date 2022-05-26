@@ -26,24 +26,33 @@ def load_obj(obj_path: str, default_obj_path: str = "") -> Any:
 
 
 def load_partial_func(**kwargs):
-    """Return partial func, _target_ as function object with paremeters from hydra config.
+    """Return partial func, _target_ as function object with parameters from hydra config.
     args in config file:
     function: function name, full path or name
     function_path: optional, path to function
     """
-    obj_path = kwargs.pop('function', None)
-    default_obj_path = kwargs.pop('function_path', '')
+    obj_path = kwargs.pop("function", None)
+    default_obj_path = kwargs.pop("function_path", "")
     func = load_obj(obj_path, default_obj_path)
     return partial(func, **kwargs)
 
 
 def load_args_list(**kwargs):
-    '''Return list of args. For instantiate list of obj by Hydra'''
+    """Return list of args. For instantiate list of obj by Hydra"""
     return list(kwargs.values())
 
 
 def call_class(**kwargs) -> Any:
     """Populate obj from 'class_name', than call it."""
-    class_name = kwargs.pop('class_name', None)
-    obj = load_obj(class_name)
+    class_name = kwargs.pop("class_name", None)
+    class_path = kwargs.pop("class_path", "")
+    obj = load_obj(obj_path=class_name, default_obj_path=class_path)
     return obj(**kwargs)()
+
+
+def load_model(**kwargs) -> Any:
+    """Populate obj from 'class_name', than call it."""
+    model_name = kwargs.pop("model_name", None)
+    model_path = kwargs.pop("model_path", "")
+    obj = load_obj(obj_path=model_name, default_obj_path=model_path)
+    return obj(**kwargs)

@@ -10,8 +10,8 @@ from pt_utils.utils import flat_dict
 from rich import print
 
 
-def get_result_files(path: PosixPath, name_pattern: str = 'log_res') -> List[PosixPath]:
-    """Return list of files for givet name pattern.
+def get_result_files(path: PosixPath, name_pattern: str = "log_res") -> List[PosixPath]:
+    """Return list of files for given name pattern.
 
     Args:
         path (PosixPath): Directory name
@@ -34,8 +34,8 @@ class Run:
         if self.repeats == 1:
             self.accuracy = read_accuracy_from_file(self.result_files[0])
         else:
-            mean_fn = [fn for fn in self.path.iterdir() if fn.name.startswith('mean')]
-            if len(mean_fn) == 0:  # if run stoped incorrectly, no file with results
+            mean_fn = [fn for fn in self.path.iterdir() if fn.name.startswith("mean")]
+            if len(mean_fn) == 0:  # if run stopped incorrectly, no file with results
                 self.accuracy, self.std = calc_mean(self.result_files)
             else:
                 self.accuracy, self.std = read_mean_from_file(mean_fn[0])
@@ -44,31 +44,31 @@ class Run:
         if self.repeats > 1:
             std_str = f"repeats: {self.repeats}, std: {self.std:0.4f}"
         else:
-            std_str = ''
+            std_str = ""
         return f"acc: {self.accuracy:.2%}, path: {self.path.name}  {std_str}"
 
     def plot_lr(self) -> None:
-        lrs = read_values_from_file(self.path / 'lrs.csv')
+        lrs = read_values_from_file(self.path / "lrs.csv")
         plt.plot(lrs)
 
     def lr_find(self, skip_end=5) -> None:
-        lrs = read_values_from_file(self.path / 'lrs.csv')[:-skip_end]
-        loss_fn = get_result_files(self.path, name_pattern='losses')[0]
+        lrs = read_values_from_file(self.path / "lrs.csv")[:-skip_end]
+        loss_fn = get_result_files(self.path, name_pattern="losses")[0]
         losses = read_values_from_file(loss_fn)[:-skip_end]
         res = read_result_from_file(self.path / self.result_files[0])
         suggests = list(res[0].keys())
         points = [(res[0][name], res[1][name]) for name in suggests]
-        colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][1:]
-        print('Suggested lrs:')
+        colors = plt.rcParams["axes.prop_cycle"].by_key()["color"][1:]
+        print("Suggested lrs:")
         for suggest, point in zip(suggests, points):
             print(f"{suggest:10} {point[0]:0.6f}")
         fig, ax = plt.subplots(1, 1)
         ax.plot(lrs, losses)
         ax.set_ylabel("Loss")
         ax.set_xlabel("Learning Rate")
-        ax.set_xscale('log')
+        ax.set_xscale("log")
         for (val, idx), name, color in zip(points, suggests, colors):
-            ax.plot(val, idx, 'ro', label=name, c=color)
+            ax.plot(val, idx, "ro", label=name, c=color)
         ax.legend()
 
     def plot_metrics(self, metric: Union[str, List[str]] = None, stack=False) -> None:
@@ -104,7 +104,9 @@ class Run:
     @property
     def results(self) -> List[List]:
         if self._results is None:
-            self._results = [read_result_from_file(res_file) for res_file in self.result_files]
+            self._results = [
+                read_result_from_file(res_file) for res_file in self.result_files
+            ]
         return self._results
 
     @property
@@ -132,7 +134,7 @@ def get_log_dirs(path: Union[str, List[str]]) -> List[PosixPath]:
     """Return list of dirs with logs.
 
     Args:
-        path (Union[str, List[str]]): Path or list of pathes to log dirs.
+        path (Union[str, List[str]]): Path or list of path's to log dirs.
 
     Returns:
         List[PosixPath]: List of dirs with results logs.
@@ -143,14 +145,18 @@ def get_log_dirs(path: Union[str, List[str]]) -> List[PosixPath]:
         path_list = [Path(path)]
     log_dirs = []
     for path in path_list:
-        log_dirs.extend(fn.parent for fn in path.rglob('*cfg.yaml') if len(get_result_files(fn.parent)) > 0)
+        log_dirs.extend(
+            fn.parent
+            for fn in path.rglob("*cfg.yaml")
+            if len(get_result_files(fn.parent)) > 0
+        )
     log_dirs.sort(key=lambda x: x.stat().st_ctime)
     return log_dirs
 
 
 def read_mean_from_file(filename: PosixPath) -> Tuple[float]:
     """Read mean, std from file with results."""
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         lines = f.readlines()
     try:
         mean = float(lines[-2].strip())
@@ -165,7 +171,7 @@ def read_mean_from_file(filename: PosixPath) -> Tuple[float]:
 def read_result_from_file(filename: Union[str, PosixPath]) -> List[dict]:
     """Read result from file."""
     res = []
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         reader = csv.DictReader(f)
         for line in reader:
             res.append({key: float(value) for key, value in line.items()})
@@ -175,7 +181,7 @@ def read_result_from_file(filename: Union[str, PosixPath]) -> List[dict]:
 def read_values_from_file(filename: Union[str, PosixPath]) -> List[float]:
     """Read result from file."""
     values = []
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         for val in f.readlines():
             values.append(float(val))
     return values
@@ -184,8 +190,8 @@ def read_values_from_file(filename: Union[str, PosixPath]) -> List[float]:
 def read_accuracy_from_file(filename: PosixPath) -> float:
     data = read_result_from_file(filename)
     try:
-        accuracy = data[-1]['accuracy']
-    except:  # noqa E722 todo add exeption
+        accuracy = data[-1]["accuracy"]
+    except:  # noqa E722 todo add exception
         accuracy = 0
     return accuracy
 
@@ -198,7 +204,9 @@ def calc_mean(filenames: List[PosixPath]) -> Tuple[float]:
     return stat(res)
 
 
-def get_runs(path: Union[str, PosixPath], sort: bool = True, max_is_best: bool = True) -> List[Run]:
+def get_runs(
+    path: Union[str, PosixPath], sort: bool = True, max_is_best: bool = True
+) -> List[Run]:
     """Read Runs from logs.
 
     Args:
@@ -234,58 +242,64 @@ def get_cfg(path: Union[str, PosixPath], flat: bool = False) -> Union[DictConfig
     Returns:
         Union[DictConfig, dict]: return config as OmegaConf DictConfig or as flattened dict.
     """
-    cfg = OmegaConf.load(path / 'cfg.yaml')
+    cfg = OmegaConf.load(path / "cfg.yaml")
     cfg.fn = str(path)
     if flat:
         cfg = flat_dict(cfg)
     return cfg
 
 
-def filter_runs(runs: List[Run], thresold: float = 0) -> List[Run]:
-    """Filter runs for run with accuracy less than thresold
+def filter_runs(runs: List[Run], threshold: float = 0) -> List[Run]:
+    """Filter runs for run with accuracy less than threshold
 
     Args:
         runs (List[Run]): List of Runs.
-        thresold (float, optional): Thresold for filter. Defaults to 0.
+        threshold (float, optional): Threshold for filter. Defaults to 0.
 
     Returns:
         List[Run]: List of runs.
     """
-    return [run for run in runs if run.accuracy > thresold]
+    return [run for run in runs if run.accuracy > threshold]
 
 
-def print_runs(runs: List[Run], header: str = None, limit: int = 0, print_num: bool = False) -> None:
+def print_runs(
+    runs: List[Run],
+    header: str = None,
+    limit: int = 0,
+    print_num: bool = False,
+    print_parent: bool = False,
+) -> None:
     """Print results.
-
-    Args:
-        runs (List[Run]): List of runs.
-        thresold (float, optional): Print only runs with accuracy more than thresold. Defaults to 0.
-        limit (int, optional): Number of runs to print. Defaults to 0, print all.
     """
     if limit:
-        lines_to_print = f", print limited to {limit}." if limit < len(runs) else ''
+        lines_to_print = f", print limited to {limit}." if limit < len(runs) else ""
         runs = runs[:limit]
     else:
-        lines_to_print = ''
+        lines_to_print = ""
 
     print(f"{header}{lines_to_print}")
     max_path_name = max(len(run.path.name) for run in runs)
 
     for run in runs:
-        std = f"rpts: {run.repeats}  std {run.std:0.4f}" if run.repeats > 1 else ''
-        if print_num and hasattr(run, 'num'):
+        std = f"rpts: {run.repeats}  std {run.std:0.4f}" if run.repeats > 1 else ""
+        if print_num and hasattr(run, "num"):
             num = f". #{run.num}"
         else:
-            num = ''
-        print(f"{run.accuracy:0.2%} . {run.path.name:{max_path_name}} {num} {std}")
+            num = ""
+        print_parent = run.path.parts[-2] if print_parent else ""
+        print(
+            f"{run.accuracy:0.2%} . {run.path.name:{max_path_name}} {num} {std} {print_parent}"
+        )
 
 
-def rename_runs(runs: List[Run], thresold: float = 0) -> None:
-    runs = [run for run in runs if run.accuracy > thresold]
+def rename_runs(runs: List[Run], threshold: float = 0) -> None:
+    runs = [run for run in runs if run.accuracy > threshold]
     for run in runs:
         cfg = get_cfg(run.path)
-        if cfg.run.repeat != run.repeats:
-            print(f"not completed - {run.path} rep: {cfg.run.repeat}, res {len(run.results)}")
+        if cfg.repeat != run.repeats:
+            print(
+                f"not completed - {run.path} rep: {cfg.repeat}, res {len(run.results)}"
+            )
         else:
             if "__" not in run.path.name:
                 new_name = run.path.parent / f"{run.path.name}__{int(round(run.accuracy, 4) * 10000)}"

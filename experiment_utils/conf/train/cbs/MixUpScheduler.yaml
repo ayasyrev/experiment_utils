@@ -1,0 +1,9 @@
+_target_: experiment_utils.utils.fastai_utils.MixUpScheduler
+
+epochs: ${train.epochs}
+start_epoch: 4
+end_pct: ${train.anneal_pct}
+# alpha_step: 0.05
+alpha_start: 0.05
+alpha: 0.2
+steps: 0

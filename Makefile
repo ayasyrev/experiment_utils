@@ -1,29 +1,11 @@
-SRC = $(wildcard nbs/*.ipynb)
-
-all: experiment-utils docs
-
-experiment-utils: $(SRC)
-	nbdev_build_lib
-	touch experiment-utils
-
-docs_serve: docs
-	cd docs && bundle exec jekyll serve
-
-docs: $(SRC)
-	nbdev_build_docs
-	touch docs
-
-test:
-	nbdev_test_nbs
-
-release: pypi
-	nbdev_bump_version
+.ONESHELL:
+SHELL := /bin/bash
 
 pypi: dist
 	twine upload --repository pypi dist/*
 
 dist: clean
-	python setup.py sdist bdist_wheel
+	python3 -m build 
 
 clean:
 	rm -rf dist

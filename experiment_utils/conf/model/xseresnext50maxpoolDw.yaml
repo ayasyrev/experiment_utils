@@ -4,8 +4,7 @@ defaults:
   - xresnet50
   - se: SEModuleConvMish
   - override act_fn: Mish
-  - override pool: MaxBlurPool2D
-  - override pool@stem_pool: MaxBlurPool2D
+  - override pool: MaxPool2d
 
 block_sizes: [128, 256, 512, 1024]
 expansion: 2

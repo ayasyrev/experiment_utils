@@ -1,0 +1,6 @@
+_target_: antialiased_cnns.BlurPool
+# channels
+# pad_type: reflect
+# filt_size: 4
+# stride: 2
+# pad_off: 0

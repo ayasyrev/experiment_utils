@@ -1,0 +1,7 @@
+defaults:
+  - xresnet18
+name: xResNet34
+
+layers: [3, 4, 6, 3]
+expansion: 1
+groups: 1

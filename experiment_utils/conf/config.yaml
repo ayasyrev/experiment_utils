@@ -2,16 +2,22 @@ defaults:
   - seed: deterministic
   - data: imagenette-320
   - dls: fastai_default
-  - model: resnet18
+  # - model: resnet18
+  # - model: xresnet18
+  - model: xse_resnext50
   - model_load: no_load
   - model_save: no_save
   - opt_fn: ranger_fastai
   - loss_fn: LabelSmoothingCrossEntropy
   - train: fit_anneal
+  # - train: fit_warmup_anneal_lin
   - _self_
 
+exp: exp_noname
+
+repeat: 1
+
 run:
-  repeat: 1
   log_dir: .
   log_lr: true
   log_loss: true
@@ -25,14 +31,19 @@ train:
 
 data:
   size: 128
+  # size: 192
   batch_size: 32
   dataloader:
     num_workers: 4
 
 hydra:
   run:
-    dir: /Logs/Hydra/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    # dir: /Logs/Hydra/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    # dir: /Logs/Hydra/run/${data.name}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    # dir: /Logs/Hydra/${exp}/${now:%Y-%m-%d}/${data.name}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    dir: /Logs/Hydra/${exp}/${now:%Y-%m-%d}/${data.name}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d_%H-%M-%S}
   sweep:
     # dir: /Logs/Hydra/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
-    dir: /Logs/Hydra/run/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    # dir: /Logs/Hydra/run/${data.name}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    dir: /Logs/Hydra/${exp}/${now:%Y-%m-%d}/${data.name}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d}/${now:%H-%M-%S}
     subdir: ${hydra.job.num}
