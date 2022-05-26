@@ -1,4 +1,2 @@
-# _target_: experiment_utils.utils.hydra_utils.load_partial_func
 _target_: fastai.callback.mixup.MixUp
-# function: fastai.callback.mixup.MixUp
 alpha: .4

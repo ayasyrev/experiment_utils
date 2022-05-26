@@ -1,3 +1,4 @@
 defaults:
   - imagenette
 data_dir: /Data/imagewoof2
+name: imagewoof

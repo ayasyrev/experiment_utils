@@ -1,2 +1,5 @@
 _target_: experiment_utils.utils.hydra_utils.load_partial_func
-function: model_constructor.ResBlock
+function: fastai.basics.Adam
+mom: 0.95
+sqr_mom: 0.99
+eps: 1e-6

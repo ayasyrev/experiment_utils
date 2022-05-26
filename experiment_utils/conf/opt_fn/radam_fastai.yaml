@@ -1,0 +1,7 @@
+_target_: experiment_utils.utils.hydra_utils.load_partial_func
+function: fastai.basics.RAdam
+mom: 0.95
+sqr_mom: 0.99
+eps: 1e-6
+beta: 0
+# mom=0.9, sqr_mom=0.99, eps=1e-5,

@@ -1,5 +1,5 @@
 _target_: experiment_utils.utils.utils.set_seed
-SEED_NUM: 2021
+SEED_NUM: 42
 seed_pythonhash: True
 seed_random: True
 seed_numpy: True

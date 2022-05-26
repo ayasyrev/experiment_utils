@@ -1,19 +1,20 @@
 from pathlib import Path, PosixPath
 from typing import List, Union
 
+from experiment_utils import __path__ as experiment_utils_path
 from hydra import compose, initialize_config_dir
 from omegaconf import DictConfig
-
-from experiment_utils import __path__ as experiment_utils_path
 
 
 experiment_utils_path = experiment_utils_path[0]
 
 
-def initialize_config(overrides: List[str] = [],
-                      config_dir_name: str = "conf",
-                      config_path: Union[str, PosixPath] = None,
-                      config_name: str = "config") -> DictConfig:
+def initialize_config(
+    overrides: List[str] = [],
+    config_dir_name: str = "conf",
+    config_path: Union[str, PosixPath] = None,
+    config_name: str = "config",
+) -> DictConfig:
     """Initialise Hydra config when work in jupyter notebook.
 
     Args:
@@ -29,7 +30,7 @@ def initialize_config(overrides: List[str] = [],
     """
     if config_path is None:
         config_path = Path(experiment_utils_path)
-    with initialize_config_dir(config_dir=str(config_path / config_dir_name)):
-        cfg = compose(config_name=config_name,
-                      overrides=overrides)
+    config_dir = (config_path / config_dir_name).absolute()
+    with initialize_config_dir(config_dir=str(config_dir), version_base="1.1"):
+        cfg = compose(config_name=config_name, overrides=overrides)
     return cfg

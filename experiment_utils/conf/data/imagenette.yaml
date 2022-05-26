@@ -2,6 +2,7 @@
   # - /dataloader/base_dl@_global_.data._group_
   # - /dataloader/base_dl@dataloader
 data_dir: /Data/imagenette2
+name: imagenette
 num_classes: 10
 size: 192
 batch_size: 64
