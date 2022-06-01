@@ -4,13 +4,29 @@ from typing import Callable, List, Union
 
 import hydra
 import numpy as np
-from fastai.basics import (CategoryBlock, DataBlock, GrandparentSplitter,
-                           Learner, accuracy, get_image_files, parent_label,
-                           tensor)
-from fastai.callback.all import (Callback, MixUp, ParamScheduler, SchedCos,
-                                 SchedLin, SchedPoly, combine_scheds)
+from fastai.basics import (
+    CategoryBlock,
+    DataBlock,
+    GrandparentSplitter,
+    Learner,
+    accuracy,
+    get_image_files,
+    parent_label,
+    tensor,
+)
+from fastai.callback.all import (
+    Callback,
+    MixUp,
+    ParamScheduler,
+    SchedCos,
+    SchedLin,
+    SchedPoly,
+    combine_scheds,
+)
 from fastai.callback.schedule import (  # noqa F401 import lr_find for patch Learner
-    SuggestionMethod, lr_find)
+    SuggestionMethod,
+    lr_find,
+)
 from fastai.data.core import DataLoaders
 from fastai.vision.all import ImageBlock, Normalize, imagenet_stats
 from fastcore.all import L
@@ -128,8 +144,8 @@ def lrfind(learn: Learner, num_it: int = 100, **kwargs):
     # result = learn.lr_find(suggest_funcs=suggest_funcs)
     learn.lr_find(num_it=num_it)
     lrs, losses = (
-        tensor(learn.recorder.lrs[num_it // 10: -5]),
-        tensor(learn.recorder.losses[num_it // 10: -5]),
+        tensor(learn.recorder.lrs[num_it // 10 : -5]),
+        tensor(learn.recorder.losses[num_it // 10 : -5]),
     )
     _suggestions = []
     for func in suggest_funcs:

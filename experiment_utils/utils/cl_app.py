@@ -2,15 +2,21 @@ from pathlib import Path
 from typing import Optional
 
 import typer
-from experiment_utils.utils.log_utils import (filter_runs, get_runs,
-                                              print_runs, rename_runs)
+from experiment_utils.utils.log_utils import (
+    filter_runs,
+    get_runs,
+    print_runs,
+    rename_runs,
+)
 from rich import print
 
 
 def show_runs(
     dir_name: Optional[str] = typer.Argument(None),
     rename: bool = typer.Option(
-        False, "-R", help="Rename directory with log with accuracy, if threshold - only filtered.",
+        False,
+        "-R",
+        help="Rename directory with log with accuracy, if threshold - only filtered.",
     ),
     print_parent: bool = typer.Option(False, "-P", help="Print parent name"),
     threshold: float = typer.Option(
