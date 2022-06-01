@@ -2,9 +2,11 @@ from functools import partial
 from pathlib import PosixPath
 from typing import Callable, List, Union
 
+import hydra
 import numpy as np
 from fastai.basics import (CategoryBlock, DataBlock, GrandparentSplitter,
-                           Learner, get_image_files, parent_label, tensor)
+                           Learner, accuracy, get_image_files, parent_label,
+                           tensor)
 from fastai.callback.all import (Callback, MixUp, ParamScheduler, SchedCos,
                                  SchedLin, SchedPoly, combine_scheds)
 from fastai.callback.schedule import (  # noqa F401 import lr_find for patch Learner
@@ -12,6 +14,7 @@ from fastai.callback.schedule import (  # noqa F401 import lr_find for patch Lea
 from fastai.data.core import DataLoaders
 from fastai.vision.all import ImageBlock, Normalize, imagenet_stats
 from fastcore.all import L
+from omegaconf import DictConfig
 from pt_utils.data.image_folder_dataset import ImageFolderDataset
 from torch.distributions.beta import Beta
 from torch.utils.data import DataLoader
@@ -319,3 +322,19 @@ class MixUpScheduler(Callback):
     def set_alpha(self, alpha):
         print(f"set alpha {alpha}")
         self.mixup.distrib = Beta(tensor(alpha), tensor(alpha))
+
+
+def get_learner(cfg: DictConfig) -> Learner:
+    """Return fastai Learner from cfg"""
+
+    dls = hydra.utils.instantiate(cfg.dls)
+    model = hydra.utils.instantiate(cfg.model, _convert_="all")
+    opt_fn = hydra.utils.call(cfg.opt_fn)
+    loss_fn = hydra.utils.instantiate(cfg.loss_fn)
+    learn = Learner(
+        dls=dls, model=model, opt_func=opt_fn, metrics=[accuracy], loss_func=loss_fn
+    )
+
+    if cfg.model_load.model_load:
+        learn.load(file=cfg.model_load.file_name, with_opt=cfg.model_load.with_opt)
+    return learn

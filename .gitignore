@@ -8,6 +8,7 @@
 ~*
 _tmp*
 tmp*
+TMP*
 tags
 
 # Byte-compiled / optimized / DLL files

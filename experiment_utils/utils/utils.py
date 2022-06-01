@@ -23,17 +23,19 @@ def print_stat(results: List[float]) -> None:
 
 
 def set_seed(
-    SEED_NUM: int = 2021,
+    SEED_NUM: int = 42,
     seed_pythonhash: bool = True,
     seed_random: bool = True,
     seed_numpy: bool = True,
     seed_torch: bool = True,
     torch_benchmark: bool = True,
     torch_deterministic: bool = False,
+    **kwargs,
 ) -> None:
     """Set seeds.
         TODO: check https://pytorch.org/docs/stable/notes/randomness.html?highlight=deterministic
     """
+    # kwargs for compatibility with hydra.utils.call - can remove later.
     if seed_pythonhash:
         os.environ["PYTHONHASHSEED"] = str(SEED_NUM)
     if seed_random:
