@@ -1,6 +1,11 @@
 import importlib
 from functools import partial
-from typing import Any
+from pathlib import PosixPath, Path
+from typing import Any, List, Optional, Union
+
+import experiment_utils
+from hydra import compose, initialize_config_dir
+from omegaconf import DictConfig
 
 
 def load_obj(obj_path: str, default_obj_path: str = "") -> Any:
@@ -56,3 +61,33 @@ def load_model(**kwargs) -> Any:
     model_path = kwargs.pop("model_path", "")
     obj = load_obj(obj_path=model_name, default_obj_path=model_path)
     return obj(**kwargs)
+
+
+experiment_utils_path = experiment_utils.__path__[0]
+
+
+def read_config(
+    overrides: List[str] = [],
+    config_dir_name: str = "conf",
+    config_path: Optional[Union[str, PosixPath, Path]] = None,
+    config_name: str = "config",
+) -> DictConfig:
+    """Read and Initialise Hydra config when work in jupyter notebook.
+
+    Args:
+        overrides (List[str], optional): List of overrides. Defaults to [].
+        config_dir_name (str, optional): Name of directory with config structure.
+            Defaults to "conf".
+        config_path (Union[str, PosixPath], optional): Path to look for config dir.
+            Defaults to None, take it from experiment_utils lib.
+        config_name (str, optional): Name for config file. Defaults to "config".
+
+    Returns:
+        DictConfig: Initialized DictConfig.
+    """
+    if config_path is None:
+        config_path = Path(experiment_utils_path)
+    config_dir = (config_path / config_dir_name).absolute()
+    with initialize_config_dir(config_dir=str(config_dir), version_base="1.1"):
+        cfg = compose(config_name=config_name, overrides=overrides)
+    return cfg

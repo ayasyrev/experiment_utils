@@ -8,7 +8,7 @@ from omegaconf import DictConfig, OmegaConf
 from rich import print
 
 
-def stat(results: List[float]) -> Tuple[float]:
+def stat(results: List[float]) -> Tuple[float, float]:
     """Return tuple(mean, std) from list of floats."""
     stat = np.array(results)
     return stat.mean(), stat.std()

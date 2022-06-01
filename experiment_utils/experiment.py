@@ -1,3 +1,4 @@
+from typing import Any, Callable
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
@@ -8,11 +9,14 @@ from experiment_utils.utils.utils import set_seed
 
 class Experiment:
 
+    learn: Any
+    train_func: Callable
+
     def __init__(self, cfg: DictConfig) -> None:
         self.cfg = cfg
         self.logger = Logger(cfg)
-        self.learn = None
-        self.train_func = None
+        # self.learn = None
+        # self.train_func = None
 
     def run(self):
         for repeat in range(self.cfg.repeat):
