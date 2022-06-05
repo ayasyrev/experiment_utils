@@ -1,0 +1,14 @@
+name: xseResNeXt50maxblurDwFlat
+
+defaults:
+  - xresnet50
+  - se: SEModuleConvMish
+  - override act_fn: Mish
+  - override pool: MaxBlurPool2D
+  - override pool@stem_pool: MaxBlurPool2D
+
+block_sizes: [256, 512, 1024, 2048]
+expansion: 1
+groups: 1
+dw: 1
+sa: 1
