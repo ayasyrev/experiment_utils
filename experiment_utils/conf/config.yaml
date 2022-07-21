@@ -3,8 +3,8 @@ defaults:
   - data: imagenette-320
   - dls: fastai_default
   # - model: resnet18
-  # - model: xresnet18
-  - model: xse_resnext50
+  - model: xresnet18
+  # - model: xse_resnext50
   - model_load: no_load
   - model_save: no_save
   - opt_fn: ranger_fastai

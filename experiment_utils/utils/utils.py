@@ -49,6 +49,7 @@ def set_seed(
 
     torch.backends.cudnn.benchmark = torch_benchmark
     torch.backends.cudnn.deterministic = torch_deterministic
+    # torch.use_deterministic_algorithms()
 
 
 def no_seed(**kwargs) -> None:

@@ -6,7 +6,10 @@ defaults:
   - block: ResBlock
   - act_fn: ReLu
   - pool: AvgPool2d
-  - pool@stem_pool: MaxPool2d
+  # - pool@stem_pool: MaxPool2d
+
+# stem_pool:
+#   kernel_size: 3
 
 num_classes: ${data.num_classes}
 block_sizes: [64, 128, 256, 512]

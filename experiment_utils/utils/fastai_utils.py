@@ -4,29 +4,13 @@ from typing import Callable, List, Union
 
 import hydra
 import numpy as np
-from fastai.basics import (
-    CategoryBlock,
-    DataBlock,
-    GrandparentSplitter,
-    Learner,
-    accuracy,
-    get_image_files,
-    parent_label,
-    tensor,
-)
-from fastai.callback.all import (
-    Callback,
-    MixUp,
-    ParamScheduler,
-    SchedCos,
-    SchedLin,
-    SchedPoly,
-    combine_scheds,
-)
+from fastai.basics import (CategoryBlock, DataBlock, GrandparentSplitter,
+                           Learner, accuracy, get_image_files, parent_label,
+                           tensor)
+from fastai.callback.all import (Callback, MixUp, ParamScheduler, SchedCos,
+                                 SchedLin, SchedPoly, combine_scheds)
 from fastai.callback.schedule import (  # noqa F401 import lr_find for patch Learner
-    SuggestionMethod,
-    lr_find,
-)
+    SuggestionMethod, lr_find)
 from fastai.data.core import DataLoaders
 from fastai.vision.all import ImageBlock, Normalize, imagenet_stats
 from fastcore.all import L
@@ -37,6 +21,8 @@ from torch.utils.data import DataLoader
 from torchvision import set_image_backend
 from torchvision import transforms as T
 from torchvision.datasets.folder import default_loader
+
+from experiment_utils.utils.hydra_utils import instantiate_model
 
 
 def convert_MP_to_blurMP(model, layer_type_old):
@@ -144,12 +130,10 @@ def lrfind(learn: Learner, num_it: int = 100, **kwargs):
     # result = learn.lr_find(suggest_funcs=suggest_funcs)
     learn.lr_find(num_it=num_it)
     lrs, losses = (
-        tensor(learn.recorder.lrs[num_it // 10 : -5]),
-        tensor(learn.recorder.losses[num_it // 10 : -5]),
+        tensor(learn.recorder.lrs[num_it // 10:-5]),
+        tensor(learn.recorder.losses[num_it // 10:-5]),
     )
-    _suggestions = []
-    for func in suggest_funcs:
-        _suggestions.append(func(lrs, losses, num_it))
+    _suggestions = [func(lrs, losses, num_it) for func in suggest_funcs]
     lrs, points = [], []
     for lr, point in _suggestions:
         lrs.append(lr)
@@ -189,6 +173,8 @@ def get_dataloaders(ds_path, bs, num_workers, item_tfms, batch_tfms):
         fastai dataloaders
     """
     batch_tfms = [Normalize.from_stats(*imagenet_stats)].extend(batch_tfms)
+    # batch_tfms = [Normalize.from_stats(*imagenet_stats)] + batch_tfms
+
     dblock = DataBlock(
         blocks=(ImageBlock, CategoryBlock),
         splitter=GrandparentSplitter(valid_name="val"),
@@ -343,14 +329,17 @@ class MixUpScheduler(Callback):
 def get_learner(cfg: DictConfig) -> Learner:
     """Return fastai Learner from cfg"""
 
-    dls = hydra.utils.instantiate(cfg.dls)
-    model = hydra.utils.instantiate(cfg.model, _convert_="all")
+    model = instantiate_model(cfg)
+
     opt_fn = hydra.utils.call(cfg.opt_fn)
     loss_fn = hydra.utils.instantiate(cfg.loss_fn)
+
+    dls = hydra.utils.instantiate(cfg.dls)
+
     learn = Learner(
         dls=dls, model=model, opt_func=opt_fn, metrics=[accuracy], loss_func=loss_fn
     )
 
-    if cfg.model_load.model_load:
-        learn.load(file=cfg.model_load.file_name, with_opt=cfg.model_load.with_opt)
+    # if cfg.model_load.model_load:
+    #     learn.load(file=cfg.model_load.file_name, with_opt=cfg.model_load.with_opt)
     return learn

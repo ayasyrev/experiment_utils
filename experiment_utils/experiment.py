@@ -1,5 +1,7 @@
 from typing import Any, Callable
+
 import hydra
+import torch
 from omegaconf import DictConfig, OmegaConf
 
 from experiment_utils.logger import Logger
@@ -11,6 +13,7 @@ class Experiment:
 
     learn: Any
     train_func: Callable
+    _model: torch.nn.Module
 
     def __init__(self, cfg: DictConfig) -> None:
         self.cfg = cfg
@@ -20,7 +23,7 @@ class Experiment:
 
     def run(self):
         for repeat in range(self.cfg.repeat):
-            set_seed(**OmegaConf.to_object(self.cfg.seed))
+            set_seed(**OmegaConf.to_object(self.cfg.seed))  # type: ignore
             self.set_learner()
             self.set_train_func()
             self.logger.start_job(self.learn, repeat)

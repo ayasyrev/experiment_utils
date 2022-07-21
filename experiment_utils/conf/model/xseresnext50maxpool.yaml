@@ -6,6 +6,7 @@ defaults:
   - override act_fn: Mish
   - override pool: MaxPool2d
 
+
 block_sizes: [128, 256, 512, 1024]
 expansion: 2
 groups: 32

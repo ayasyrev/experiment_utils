@@ -43,7 +43,10 @@ class Logger:
         self.start_time = time.time()
 
     def log_model(self):
-        with open(self.log_dir / f"model_{self.learn.model._get_name()}.txt", "w") as f:
+        model_name = self.learn.model._get_name()
+        if model_name == "Sequential":
+            model_name = self.learn.model.extra_repr()
+        with open(self.log_dir / f"model_{model_name}.txt", "w") as f:
             f.write(str(self.learn.model))
 
     def log_job(self) -> None:
@@ -82,8 +85,11 @@ class Logger:
             name_suffix = "_" + name_suffix
         with open(self.log_dir / f"{file_name}{name_suffix}.csv", "w") as f:
             writer = csv.writer(f)
-            writer.writerow(self.learn.recorder.metric_names[1:-1])
-            writer.writerows(self.learn.recorder.values)
+            # writer.writerow(self.learn.recorder.metric_names[1:-1])
+            writer.writerow(["epoch_num"] + self.learn.recorder.metric_names[1:-1])
+            # writer.writerows(self.learn.recorder.values)
+            for epoch, ep_value in enumerate(self.learn.recorder.values):
+                writer.writerow([epoch] + ep_value)
 
     def log_resume(self) -> None:
         """Write summary for results to file
@@ -110,4 +116,6 @@ class Logger:
         """
 
         with open(self.log_dir / f"{name}.csv", "w") as f:
-            f.writelines(map(lambda i: f"{i}\n", values))
+            # f.writelines(map(lambda i: f"{i}\n", values))
+            for epoch, value in enumerate(values):
+                f.write(f"{epoch} {value}\n")

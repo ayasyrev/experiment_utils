@@ -1,14 +1,16 @@
-name: xseResNeXt50maxblur
+name: xseResNeXt50maxstemblurpool
 
 defaults:
   - xresnet50
   - se: SEModuleConvMish
   - sa: SimpleSelfAttention
-  # - override pool@stem_pool: MaxBlurPool2D
-  - pool@stem_pool: MaxBlurPool2D
   - override act_fn: Mish
   - override pool: MaxBlurPool2D
-  
+  # - override pool@stem_pool: MaxBlurPool2D
+
 block_sizes: [128, 256, 512, 1024]
 expansion: 2
 groups: 32
+
+# stem_pool:
+#   kernel_size: 3

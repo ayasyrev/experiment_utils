@@ -1,0 +1,5 @@
+_target_: experiment_utils.utils.hydra_utils.call_class
+class_name:  model_constructor.ModelConstructor
+name: mc_def_xResNet18
+
+num_classes: ${data.num_classes}

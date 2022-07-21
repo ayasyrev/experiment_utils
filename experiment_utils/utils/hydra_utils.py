@@ -1,9 +1,11 @@
 import importlib
 from functools import partial
-from pathlib import PosixPath, Path
+from pathlib import Path, PosixPath
 from typing import Any, List, Optional, Union
 
 import experiment_utils
+import hydra
+import torch
 from hydra import compose, initialize_config_dir
 from omegaconf import DictConfig
 
@@ -87,7 +89,24 @@ def read_config(
     """
     if config_path is None:
         config_path = Path(experiment_utils_path)
+    else:
+        config_path = Path(config_path)
     config_dir = (config_path / config_dir_name).absolute()
     with initialize_config_dir(config_dir=str(config_dir), version_base="1.1"):
         cfg = compose(config_name=config_name, overrides=overrides)
     return cfg
+
+
+def instantiate_model(cfg: DictConfig) -> torch.nn.Module:
+    model: torch.nn.Module = hydra.utils.instantiate(cfg.model, _convert_="all")
+    if cfg.model_load.model_load:
+        model_state = model.state_dict()
+        loaded_state = torch.load(f"{cfg.model_load.model_path}{cfg.model_load.file_name}.pt")
+        loaded_state_keys = loaded_state.keys()
+        missed_keys = [key for key in model_state.keys() if key not in loaded_state_keys]
+        # if missed_keys:
+        print(f"Missed keys: {missed_keys}")
+        for key in missed_keys:
+            loaded_state[key] = model_state[key]
+        model.load_state_dict(loaded_state)
+    return model
