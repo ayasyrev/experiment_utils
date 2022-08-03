@@ -1,0 +1,4 @@
+_target_: experiment_utils.utils.hydra_utils.class_obj
+class_name: local_utils.model_constructor.act_fn.xsGelu
+max: 0.8
+mult_max: 0.01

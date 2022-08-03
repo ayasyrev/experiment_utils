@@ -4,3 +4,4 @@ model_load: True
 model_path: /Data/model_weights/
 file_name: xse_resnext50_weight_0
 with_opt: False
+se_name: False

@@ -4,6 +4,8 @@ from typing import Callable, List, Union
 
 import hydra
 import numpy as np
+import torch
+from experiment_utils.utils.hydra_utils import instantiate_model
 from fastai.basics import (CategoryBlock, DataBlock, GrandparentSplitter,
                            Learner, accuracy, get_image_files, parent_label,
                            tensor)
@@ -21,8 +23,6 @@ from torch.utils.data import DataLoader
 from torchvision import set_image_backend
 from torchvision import transforms as T
 from torchvision.datasets.folder import default_loader
-
-from experiment_utils.utils.hydra_utils import instantiate_model
 
 
 def convert_MP_to_blurMP(model, layer_type_old):
@@ -330,6 +330,8 @@ def get_learner(cfg: DictConfig) -> Learner:
     """Return fastai Learner from cfg"""
 
     model = instantiate_model(cfg)
+    if cfg.model_load.model_load:
+        load_model_state(model, cfg)
 
     opt_fn = hydra.utils.call(cfg.opt_fn)
     loss_fn = hydra.utils.instantiate(cfg.loss_fn)
@@ -343,3 +345,27 @@ def get_learner(cfg: DictConfig) -> Learner:
     # if cfg.model_load.model_load:
     #     learn.load(file=cfg.model_load.file_name, with_opt=cfg.model_load.with_opt)
     return learn
+
+
+def load_model_state(model: torch.nn.Module, cfg: DictConfig) -> None:
+    model_state = model.state_dict()
+    loaded_state = torch.load(f"{cfg.model_load.model_path}{cfg.model_load.file_name}.pt")
+    loaded_state_keys = loaded_state.keys()
+    missed_keys = [key for key in model_state.keys() if key not in loaded_state_keys]
+    # if missed_keys:
+    print(f"Missed keys: {missed_keys}")
+    for key in missed_keys:
+        loaded_state[key] = model_state[key]
+    wrong_shape = []
+    for key in loaded_state.keys():
+        if loaded_state[key].shape != model_state[key].shape:
+            wrong_shape.append(key)
+            loaded_state[key] = loaded_state[key].view_as(model_state[key])
+    if wrong_shape:
+        print(f"changed {len(wrong_shape)} modules.")
+    if cfg.model_load.se_name:
+        se_state = torch.load(f"{cfg.model_load.model_path}{cfg.model_load.se_name}.pt")
+        for key in se_state.keys():
+            loaded_state[key] = se_state[key].view_as(model_state[key])
+        print(f"loaded {len(se_state)} se weights {cfg.model_load.se_name}")
+    model.load_state_dict(loaded_state)

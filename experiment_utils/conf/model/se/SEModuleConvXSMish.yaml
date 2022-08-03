@@ -1,0 +1,4 @@
+defaults:
+  - SEModuleConv
+  - /model/act_fn@act_fn: xsMish
+  

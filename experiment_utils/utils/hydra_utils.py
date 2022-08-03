@@ -57,6 +57,14 @@ def call_class(**kwargs) -> Any:
     return obj(**kwargs)()
 
 
+def class_obj(**kwargs) -> Any:
+    """Populate obj from 'class_name', than call it."""
+    class_name = kwargs.pop("class_name", None)
+    class_path = kwargs.pop("class_path", "")
+    obj = load_obj(obj_path=class_name, default_obj_path=class_path)
+    return obj(**kwargs)
+
+
 def load_model(**kwargs) -> Any:
     """Populate obj from 'class_name', than call it."""
     model_name = kwargs.pop("model_name", None)
@@ -99,14 +107,4 @@ def read_config(
 
 def instantiate_model(cfg: DictConfig) -> torch.nn.Module:
     model: torch.nn.Module = hydra.utils.instantiate(cfg.model, _convert_="all")
-    if cfg.model_load.model_load:
-        model_state = model.state_dict()
-        loaded_state = torch.load(f"{cfg.model_load.model_path}{cfg.model_load.file_name}.pt")
-        loaded_state_keys = loaded_state.keys()
-        missed_keys = [key for key in model_state.keys() if key not in loaded_state_keys]
-        # if missed_keys:
-        print(f"Missed keys: {missed_keys}")
-        for key in missed_keys:
-            loaded_state[key] = model_state[key]
-        model.load_state_dict(loaded_state)
     return model

@@ -1,0 +1,4 @@
+# _target_: local_utils.model_constructor.mtanh.MultTanh
+_target_: experiment_utils.utils.hydra_utils.class_obj
+class_name: local_utils.model_constructor.mtanh.MultTanh
+mult: 0.5

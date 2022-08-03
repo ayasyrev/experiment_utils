@@ -1,0 +1,6 @@
+# _target_: local_utils.model_constructor.mtanh.MultTanh
+_target_: experiment_utils.utils.hydra_utils.class_obj
+class_name: local_utils.model_constructor.act_fn.xTnGelu
+max_mult: 1.
+min_mult: 1.
+tmult: 1.

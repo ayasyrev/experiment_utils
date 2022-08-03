@@ -23,7 +23,8 @@ class Experiment:
 
     def run(self):
         for repeat in range(self.cfg.repeat):
-            set_seed(**OmegaConf.to_object(self.cfg.seed))  # type: ignore
+            # set_seed(**OmegaConf.to_object(self.cfg.seed))  # type: ignore
+            set_seed(cfg=self.cfg.seed)
             self.set_learner()
             self.set_train_func()
             self.logger.start_job(self.learn, repeat)
