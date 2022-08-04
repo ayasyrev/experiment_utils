@@ -2,7 +2,7 @@ from typing import Any, Callable
 
 import hydra
 import torch
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 
 from experiment_utils.logger import Logger
 from experiment_utils.utils.fastai_utils import get_learner
@@ -23,7 +23,6 @@ class Experiment:
 
     def run(self):
         for repeat in range(self.cfg.repeat):
-            # set_seed(**OmegaConf.to_object(self.cfg.seed))  # type: ignore
             set_seed(cfg=self.cfg.seed)
             self.set_learner()
             self.set_train_func()

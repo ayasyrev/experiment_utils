@@ -1,16 +1,19 @@
 import csv
 from pathlib import Path, PosixPath
-from typing import List, Tuple, Union
+from typing import List, Tuple, TypeVar, Union
 
 from experiment_utils.utils.utils import print_stat, show_cfg, stat
 from matplotlib import pyplot as plt
-from omegaconf import OmegaConf
+from omegaconf import ListConfig, OmegaConf
 from omegaconf.dictconfig import DictConfig
 from pt_utils.utils import flat_dict
 from rich import print
 
 
-def get_result_files(path: PosixPath, name_pattern: str = "log_res") -> List[PosixPath]:
+PathOrStr = TypeVar("PathOrStr", Path, PosixPath, str)
+
+
+def get_result_files(path: PathOrStr, name_pattern: str = "log_res") -> List[Union[PosixPath, Path]]:
     """Return list of files for given name pattern.
 
     Args:
@@ -20,7 +23,7 @@ def get_result_files(path: PosixPath, name_pattern: str = "log_res") -> List[Pos
     Returns:
         List[PosixPath]: List of file names as PosixPath.
     """
-    return [fn for fn in path.iterdir() if fn.name.startswith(name_pattern)]
+    return [fn for fn in Path(path).iterdir() if fn.name.startswith(name_pattern)]
 
 
 class Run:
@@ -71,7 +74,7 @@ class Run:
             ax.plot(val, idx, "ro", label=name, c=color)
         ax.legend()
 
-    def plot_metrics(self, metric: Union[str, List[str]] = None, stack=False) -> None:
+    def plot_metrics(self, metric: Union[str, List[str], None] = None, stack=False) -> None:
         if metric is None:
             metric = self.metrics
         else:
@@ -130,7 +133,7 @@ class Run:
         show_cfg(self.cfg)
 
 
-def get_log_dirs(path: Union[str, List[str]]) -> List[PosixPath]:
+def get_log_dirs(path: Union[PathOrStr, List[PathOrStr]]) -> List[PosixPath]:
     """Return list of dirs with logs.
 
     Args:
@@ -139,22 +142,22 @@ def get_log_dirs(path: Union[str, List[str]]) -> List[PosixPath]:
     Returns:
         List[PosixPath]: List of dirs with results logs.
     """
-    if type(path) is list:
+    if isinstance(path, list):
         path_list = [Path(i) for i in path]
     else:
         path_list = [Path(path)]
     log_dirs = []
-    for path in path_list:
+    for item in path_list:
         log_dirs.extend(
             fn.parent
-            for fn in path.rglob("*cfg.yaml")
+            for fn in item.rglob("*cfg.yaml")
             if len(get_result_files(fn.parent)) > 0
         )
     log_dirs.sort(key=lambda x: x.stat().st_ctime)
     return log_dirs
 
 
-def read_mean_from_file(filename: PosixPath) -> Tuple[float]:
+def read_mean_from_file(filename: PathOrStr) -> Tuple[float, float]:
     """Read mean, std from file with results."""
     with open(filename, "r") as f:
         lines = f.readlines()
@@ -164,11 +167,11 @@ def read_mean_from_file(filename: PosixPath) -> Tuple[float]:
     except Exception:
         print(Exception)
         print(filename)
-        mean, std = 0, 0
+        mean, std = 0., 0.
     return mean, std
 
 
-def read_result_from_file(filename: Union[str, PosixPath]) -> List[dict]:
+def read_result_from_file(filename: Union[str, PosixPath, Path]) -> List[dict]:
     """Read result from file."""
     res = []
     with open(filename, "r") as f:
@@ -178,7 +181,7 @@ def read_result_from_file(filename: Union[str, PosixPath]) -> List[dict]:
     return res
 
 
-def read_values_from_file(filename: Union[str, PosixPath]) -> List[float]:
+def read_values_from_file(filename: Union[str, PosixPath, Path]) -> List[float]:
     """Read result from file."""
     values = []
     with open(filename, "r") as f:
@@ -187,7 +190,7 @@ def read_values_from_file(filename: Union[str, PosixPath]) -> List[float]:
     return values
 
 
-def read_accuracy_from_file(filename: PosixPath) -> float:
+def read_accuracy_from_file(filename: PosixPath|Path) -> float:
     data = read_result_from_file(filename)
     try:
         accuracy = data[-1]["accuracy"]
@@ -196,7 +199,7 @@ def read_accuracy_from_file(filename: PosixPath) -> float:
     return accuracy
 
 
-def calc_mean(filenames: List[PosixPath]) -> Tuple[float]:
+def calc_mean(filenames: List[PosixPath | Path]) -> Tuple[float, float]:
     """Calculate mean from results in files."""
     res = []
     for fn in filenames:
@@ -205,7 +208,7 @@ def calc_mean(filenames: List[PosixPath]) -> Tuple[float]:
 
 
 def get_runs(
-    path: Union[str, PosixPath], sort: bool = True, max_is_best: bool = True
+    path: PathOrStr, sort: bool = True, max_is_best: bool = True
 ) -> List[Run]:
     """Read Runs from logs.
 
@@ -228,11 +231,11 @@ def get_runs(
     return runs
 
 
-def stat_runs(runs: List[Run]) -> Tuple[float]:
+def stat_runs(runs: List[Run]) -> None:
     print_stat([run.accuracy for run in runs])
 
 
-def get_cfg(path: Union[str, PosixPath], flat: bool = False) -> Union[DictConfig, dict]:
+def get_cfg(path: PathOrStr, flat: bool = False) -> Union[DictConfig, dict, ListConfig]:
     """Read cfg from path.
 
     Args:
@@ -242,7 +245,7 @@ def get_cfg(path: Union[str, PosixPath], flat: bool = False) -> Union[DictConfig
     Returns:
         Union[DictConfig, dict]: return config as OmegaConf DictConfig or as flattened dict.
     """
-    cfg = OmegaConf.load(path / "cfg.yaml")
+    cfg = OmegaConf.load(Path(path) / "cfg.yaml")
     cfg.fn = str(path)
     if flat:
         cfg = flat_dict(cfg)
@@ -264,7 +267,7 @@ def filter_runs(runs: List[Run], threshold: float = 0) -> List[Run]:
 
 def print_runs(
     runs: List[Run],
-    header: str = None,
+    header: Union[str, None] = None,
     limit: int = 0,
     print_num: bool = False,
     print_parent: bool = False,
@@ -286,9 +289,9 @@ def print_runs(
             num = f". #{run.num}"
         else:
             num = ""
-        print_parent = run.path.parts[-2] if print_parent else ""
+        parent_name = run.path.parts[-2] if print_parent else ""
         print(
-            f"{run.accuracy:0.2%} . {run.path.name:{max_path_name}} {num} {std} {print_parent}"
+            f"{run.accuracy:0.2%} . {run.path.name:{max_path_name}} {num} {std} {parent_name}"
         )
 
 

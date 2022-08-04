@@ -159,7 +159,7 @@ def fit(self: Learner, epochs, lr, cbs, reset_opt=False, wd=None):
     self.fit(epochs, lr, cbs=L(cbs), reset_opt=reset_opt, wd=wd)
 
 
-def get_dataloaders(ds_path, bs, num_workers, item_tfms, batch_tfms):
+def get_dataloaders(ds_path, bs, num_workers, item_tfms, batch_tfms: List):
     """Return dataloaders for fastai learner.
     As at fastai imagenette example.
 
@@ -172,11 +172,11 @@ def get_dataloaders(ds_path, bs, num_workers, item_tfms, batch_tfms):
     Returns:
         fastai dataloaders
     """
-    batch_tfms = [Normalize.from_stats(*imagenet_stats)].extend(batch_tfms)
+    batch_tfms = [Normalize.from_stats(*imagenet_stats)].extend(batch_tfms)  # type: ignore
     # batch_tfms = [Normalize.from_stats(*imagenet_stats)] + batch_tfms
 
     dblock = DataBlock(
-        blocks=(ImageBlock, CategoryBlock),
+        blocks=[ImageBlock, CategoryBlock],
         splitter=GrandparentSplitter(valid_name="val"),
         get_items=get_image_files,
         get_y=parent_label,
@@ -271,7 +271,7 @@ class MixUpScheduler(Callback):
         self,
         epochs: int,
         start_epoch: int = 4,
-        end_pct: int = 0.75,
+        end_pct: float = 0.75,
         alpha_start: float = 0.05,
         alpha: float = 0.2,
         steps: int = 0,
@@ -351,11 +351,18 @@ def load_model_state(model: torch.nn.Module, cfg: DictConfig) -> None:
     model_state = model.state_dict()
     loaded_state = torch.load(f"{cfg.model_load.model_path}{cfg.model_load.file_name}.pt")
     loaded_state_keys = loaded_state.keys()
-    missed_keys = [key for key in model_state.keys() if key not in loaded_state_keys]
-    # if missed_keys:
-    print(f"Missed keys: {missed_keys}")
-    for key in missed_keys:
-        loaded_state[key] = model_state[key]
+    model_state_keys = model_state.keys()
+    new_keys = [key for key in model_state_keys if key not in loaded_state_keys]
+    if new_keys:
+        print(f"keys missed in saved weights: {new_keys}")
+        for key in new_keys:
+            loaded_state[key] = model_state[key]
+    missed_keys = [key for key in loaded_state_keys if key not in model_state_keys]
+    if missed_keys:
+        print(f"New keys in model: {missed_keys}")
+        for key in missed_keys:
+            if ".bn." in key:
+                loaded_state.pop(key)
     wrong_shape = []
     for key in loaded_state.keys():
         if loaded_state[key].shape != model_state[key].shape:
