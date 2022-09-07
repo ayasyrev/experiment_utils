@@ -305,8 +305,5 @@ def rename_runs(runs: List[Run], threshold: float = 0) -> None:
             )
         else:
             if "__" not in run.path.name:
-                new_name = (
-                    run.path.parent
-                    / f"{run.path.name}__{int(round(run.accuracy, 4) * 10000)}"
-                )
+                new_name = run.path.parent / f"{run.path.name}__{int(round(run.accuracy, 4) * 10000)}"
                 run.path.rename(new_name)

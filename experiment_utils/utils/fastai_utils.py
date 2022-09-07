@@ -4,7 +4,6 @@ from typing import Callable, List, Union
 
 import hydra
 import numpy as np
-import torch
 from experiment_utils.utils.hydra_utils import instantiate_model
 from fastai.basics import (CategoryBlock, DataBlock, GrandparentSplitter,
                            Learner, accuracy, get_image_files, parent_label,
@@ -17,12 +16,14 @@ from fastai.data.core import DataLoaders
 from fastai.vision.all import ImageBlock, Normalize, imagenet_stats
 from fastcore.all import L
 from omegaconf import DictConfig
-from pt_utils.data.image_folder_dataset import ImageFolderDataset
+from timm.data import ImageDataset, create_transform
 from torch.distributions.beta import Beta
 from torch.utils.data import DataLoader
 from torchvision import set_image_backend
 from torchvision import transforms as T
 from torchvision.datasets.folder import default_loader
+
+from pt_utils.data.image_folder_dataset import ImageFolderDataset
 
 
 def convert_MP_to_blurMP(model, layer_type_old):
@@ -96,7 +97,7 @@ def fit_warmup_anneal(
     cbs=None,
     reset_opt=False,
     wd=None,
-    power=1,
+    power=2,
 ):
     """Fit 'self.model' for 'n_cycles' with warmup and annealing.
     default - no warmup and 'cos' annealing start at 0.75"""
@@ -195,7 +196,8 @@ def dls_from_pytorch(
     num_workers: int,
     dataset_func: Callable = ImageFolderDataset,
     loader: Callable = default_loader,
-    image_backend: str = "pil",  # 'accimage'
+    # image_backend: str = "pil",  # 'accimage'
+    image_backend: str = "PIL",  # 'accimage'
     limit_dataset: Union[bool, int] = False,
     pin_memory: bool = True,
     shuffle: bool = True,
@@ -241,6 +243,77 @@ def dls_from_pytorch(
         loader=loader,
         limit_dataset=limit_dataset,
     )
+
+    train_loader = DataLoader(
+        dataset=train_ds,
+        batch_size=batch_size,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
+        shuffle=shuffle,
+        drop_last=drop_last,
+        persistent_workers=persistent_workers,
+    )
+    val_loader = DataLoader(
+        dataset=val_ds,
+        batch_size=batch_size,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
+        shuffle=shuffle_val,
+        drop_last=drop_last_val,
+        persistent_workers=persistent_workers,
+    )
+    return DataLoaders(train_loader, val_loader)
+
+
+def dls_pytorch_timm(
+    train_data_path: Union[str, PosixPath],
+    val_data_path: Union[str, PosixPath],
+    size: int,
+    batch_size: int,
+    num_workers: int,
+    dataset_func: Callable = ImageFolderDataset,
+    loader: Callable = default_loader,
+    # image_backend: str = "pil",  # 'accimage'
+    image_backend: str = "PIL",  # 'accimage'
+    limit_dataset: Union[bool, int] = False,
+    pin_memory: bool = True,
+    shuffle: bool = True,
+    shuffle_val: bool = False,
+    drop_last: bool = True,
+    drop_last_val: bool = False,
+    persistent_workers: bool = False,
+    color_jitter: float | None = None,
+):
+    """Return fastai dataloaders created from pytorch dataloaders.
+
+    Args:
+        train_data_path (Union[str, PosixPath]): path for train data.
+        val_data_path (Union[str, PosixPath]): path for validation data.
+        train_tfms (List): List of transforms for train data.
+        val_tfms (List): List of transforms for validation data
+        batch_size (int): Batch size
+        num_workers (int): Number of workers
+        dataset_func (Callable, optional): Function or class to create dataset. Defaults to ImageFolderDataset.
+        loader (Callable, optional): Function that load image. Defaults to default_loader.
+        image_backend (str, optional): Image backend to use. Defaults to 'pil'.
+        pin_memory (bool, optional): Use pin memory. Defaults to True.
+        shuffle (bool, optional): Use shuffle for train data. Defaults to True.
+        shuffle_val (bool, optional): Use shuffle for validation data. Defaults to False.
+        drop_last (bool, optional): If last batch not full drop it or not. Defaults to True.
+        drop_last_val (bool, optional): If last batch on validation data not full drop it or not. Defaults to False.
+        persistent_workers (bool, optional): Use persistance workers. Defaults to False.
+
+    Returns:
+        fastai dataloaders
+    """
+
+    set_image_backend(image_backend)
+    train_tfms = create_transform(size, is_training=True, color_jitter=color_jitter, scale=(0.35, 1.))
+    val_tfms = create_transform(size, is_training=False)
+
+    train_ds = ImageDataset(root=train_data_path, transform=train_tfms)
+
+    val_ds = ImageDataset(root=val_data_path, transform=val_tfms)
 
     train_loader = DataLoader(
         dataset=train_ds,
@@ -326,12 +399,10 @@ class MixUpScheduler(Callback):
         self.mixup.distrib = Beta(tensor(alpha), tensor(alpha))
 
 
-def get_learner(cfg: DictConfig) -> Learner:
+def get_learner(cfg: DictConfig, model=None) -> Learner:
     """Return fastai Learner from cfg"""
-
-    model = instantiate_model(cfg)
-    if cfg.model_load.model_load:
-        load_model_state(model, cfg)
+    if model is None:
+        model = instantiate_model(cfg)
 
     opt_fn = hydra.utils.call(cfg.opt_fn)
     loss_fn = hydra.utils.instantiate(cfg.loss_fn)
@@ -345,34 +416,3 @@ def get_learner(cfg: DictConfig) -> Learner:
     # if cfg.model_load.model_load:
     #     learn.load(file=cfg.model_load.file_name, with_opt=cfg.model_load.with_opt)
     return learn
-
-
-def load_model_state(model: torch.nn.Module, cfg: DictConfig) -> None:
-    model_state = model.state_dict()
-    loaded_state = torch.load(f"{cfg.model_load.model_path}{cfg.model_load.file_name}.pt")
-    loaded_state_keys = loaded_state.keys()
-    model_state_keys = model_state.keys()
-    new_keys = [key for key in model_state_keys if key not in loaded_state_keys]
-    if new_keys:
-        print(f"keys missed in saved weights: {new_keys}")
-        for key in new_keys:
-            loaded_state[key] = model_state[key]
-    missed_keys = [key for key in loaded_state_keys if key not in model_state_keys]
-    if missed_keys:
-        print(f"New keys in model: {missed_keys}")
-        for key in missed_keys:
-            if ".bn." in key:
-                loaded_state.pop(key)
-    wrong_shape = []
-    for key in loaded_state.keys():
-        if loaded_state[key].shape != model_state[key].shape:
-            wrong_shape.append(key)
-            loaded_state[key] = loaded_state[key].view_as(model_state[key])
-    if wrong_shape:
-        print(f"changed {len(wrong_shape)} modules.")
-    if cfg.model_load.se_name:
-        se_state = torch.load(f"{cfg.model_load.model_path}{cfg.model_load.se_name}.pt")
-        for key in se_state.keys():
-            loaded_state[key] = se_state[key].view_as(model_state[key])
-        print(f"loaded {len(se_state)} se weights {cfg.model_load.se_name}")
-    model.load_state_dict(loaded_state)

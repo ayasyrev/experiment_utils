@@ -1,0 +1,5 @@
+name: ya_xseResNeXt50maxstemblur
+
+defaults:
+  - ya_xseresnext50
+  - override pool: MaxBlurPool2D

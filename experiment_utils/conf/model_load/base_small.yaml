@@ -1,0 +1,18 @@
+model_load: False # do not use default loader
+model_path: /Data/model_weights/
+file_name: xse_resnext50_weight_0
+with_opt: False
+se_name: False
+process_model:
+  _target_: experiment_utils.utils.hydra_utils.load_func
+  function_path: local_utils.model_constructor.process_model
+  function: load_model_state_small
+  # fc_name: False
+  # head_lin: head_lin_0
+  # bn_pool: True
+  # bn_end: False
+  # bn_first: False
+  # bn: true
+  # mult: 1.
+  # mult_max: 1.
+  # adapt_pool: True

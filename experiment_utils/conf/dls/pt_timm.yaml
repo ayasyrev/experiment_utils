@@ -1,0 +1,14 @@
+_target_: experiment_utils.utils.fastai_utils.dls_pytorch_timm
+
+train_data_path: ${data.data_dir}/train
+val_data_path: ${data.data_dir}/val
+
+batch_size: ${data.batch_size}
+size: ${data.size}
+num_workers: ${data.dataloader.num_workers}
+pin_memory: False  # True
+shuffle: True
+shuffle_val: False
+drop_last: True
+persistent_workers: False
+color_jitter: None

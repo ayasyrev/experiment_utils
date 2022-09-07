@@ -69,6 +69,7 @@ class Logger:
                 else self.cfg.model_save.file_name
             )
             self.learn.save(fn, with_opt=self.cfg.model_save.with_opt)
+            print(f"model saved. {fn}, {Path.cwd()}")
 
     def log_run(self) -> None:
         if self.cfg.run.log_lr:

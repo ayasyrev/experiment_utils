@@ -1,0 +1,6 @@
+name: ya_xseResNeXt50maxblur
+
+defaults:
+  - ya_xseresnext50
+  - pool@stem_pool: MaxBlurPool2D
+  - override pool: MaxBlurPool2D

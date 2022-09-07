@@ -32,13 +32,25 @@ def load_obj(obj_path: str, default_obj_path: str = "") -> Any:
     return getattr(module_obj, obj_name)
 
 
+def load_func(**kwargs):
+    """Return func, _target_ as function object with parameters from hydra config.
+    args in config file:
+    function: function name, full path or name
+    function_path: optional, path to function
+    """
+    obj_path = kwargs.pop("function", "")
+    default_obj_path = kwargs.pop("function_path", "")
+    func = load_obj(obj_path, default_obj_path)
+    return func
+
+
 def load_partial_func(**kwargs):
     """Return partial func, _target_ as function object with parameters from hydra config.
     args in config file:
     function: function name, full path or name
     function_path: optional, path to function
     """
-    obj_path = kwargs.pop("function", None)
+    obj_path = kwargs.pop("function", "")
     default_obj_path = kwargs.pop("function_path", "")
     func = load_obj(obj_path, default_obj_path)
     return partial(func, **kwargs)

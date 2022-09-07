@@ -1,0 +1,13 @@
+name: ya_xseResNeXt50
+
+defaults:
+  - xresnet50
+  - se: SEModuleConvMish
+  - sa: SimpleSelfAttention
+
+  - override block: YaResBlock
+  - override act_fn: Mish
+
+block_sizes: [128, 256, 512, 1024]
+expansion: 2
+groups: 32

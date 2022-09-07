@@ -1,0 +1,10 @@
+defaults:
+  - xresnet18
+  - override act_fn: Mish
+
+name: xResNet34d
+
+block_sizes: [128, 256, 512, 1024]
+layers: [2, 2, 2, 2]
+expansion: 2
+groups: 32
