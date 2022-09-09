@@ -1,4 +1,4 @@
 _target_: torchvision.transforms.RandomResizedCrop
 size: ${data.size}
-# scale: [0.35, 1]
-scale: [0.8, 1]
+scale: [0.35, 1]
+# scale: [0.8, 1]

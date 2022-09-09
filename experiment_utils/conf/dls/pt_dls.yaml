@@ -14,3 +14,5 @@ shuffle: True
 shuffle_val: False
 drop_last: True
 persistent_workers: False
+
+image_backend: PIL

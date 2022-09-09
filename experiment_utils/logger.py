@@ -46,6 +46,7 @@ class Logger:
         model_name = self.learn.model._get_name()
         if model_name == "Sequential":
             model_name = self.learn.model.extra_repr()
+        self.model_name = model_name
         with open(self.log_dir / f"model_{model_name}.txt", "w") as f:
             f.write(str(self.learn.model))
 
@@ -64,7 +65,8 @@ class Logger:
         print(50 * "-")
         if self.cfg.model_save.model_save:
             fn = (
-                f"{self.learn.model._get_name()}_{self.cfg.run.date_time}_{name_suffix}"
+                # f"{self.learn.model._get_name()}_{self.cfg.run.date_time}_{name_suffix}"
+                f"{self.model_name}_{self.cfg.run.date_time}_{name_suffix}"
                 if self.cfg.model_save.file_name == "model"
                 else self.cfg.model_save.file_name
             )

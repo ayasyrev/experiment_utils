@@ -1,4 +1,4 @@
-_target_: experiment_utils.utils.fastai_utils.dls_timm
+_target_: experiment_utils.utils.fastai_utils.dls_pt_timm
 
 train_data_path: ${data.data_dir}/train
 val_data_path: ${data.data_dir}/val
@@ -11,4 +11,9 @@ shuffle: True
 shuffle_val: False
 drop_last: True
 persistent_workers: False
-color_jitter: None
+# color_jitter: None
+
+limit_dataset: False
+# scale: (0.35, 1.)
+
+image_backend: PIL

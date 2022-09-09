@@ -265,7 +265,90 @@ def dls_from_pytorch(
     return DataLoaders(train_loader, val_loader)
 
 
-def dls_pytorch_timm(
+def dls_pt_timm(
+    train_data_path: Union[str, PosixPath],
+    val_data_path: Union[str, PosixPath],
+    # train_tfms: List,
+    # val_tfms: List,
+    size: int,
+    batch_size: int,
+    num_workers: int,
+    dataset_func: Callable = ImageFolderDataset,
+    loader: Callable = default_loader,
+    # image_backend: str = "pil",  # 'accimage'
+    image_backend: str = "PIL",  # 'accimage'
+    limit_dataset: Union[bool, int] = False,
+    pin_memory: bool = True,
+    shuffle: bool = True,
+    shuffle_val: bool = False,
+    drop_last: bool = True,
+    drop_last_val: bool = False,
+    persistent_workers: bool = False,
+    color_jitter: float | None = None,
+    scale: tuple[float, float]= (0.35, 1.),
+):
+    """Return fastai dataloaders created from pytorch dataloaders.
+
+    Args:
+        train_data_path (Union[str, PosixPath]): path for train data.
+        val_data_path (Union[str, PosixPath]): path for validation data.
+        train_tfms (List): List of transforms for train data.
+        val_tfms (List): List of transforms for validation data
+        batch_size (int): Batch size
+        num_workers (int): Number of workers
+        dataset_func (Callable, optional): Function or class to create dataset. Defaults to ImageFolderDataset.
+        loader (Callable, optional): Function that load image. Defaults to default_loader.
+        image_backend (str, optional): Image backend to use. Defaults to 'pil'.
+        pin_memory (bool, optional): Use pin memory. Defaults to True.
+        shuffle (bool, optional): Use shuffle for train data. Defaults to True.
+        shuffle_val (bool, optional): Use shuffle for validation data. Defaults to False.
+        drop_last (bool, optional): If last batch not full drop it or not. Defaults to True.
+        drop_last_val (bool, optional): If last batch on validation data not full drop it or not. Defaults to False.
+        persistent_workers (bool, optional): Use persistance workers. Defaults to False.
+
+    Returns:
+        fastai dataloaders
+    """
+    set_image_backend(image_backend)
+
+    train_tfms = create_transform(size, is_training=True, color_jitter=color_jitter, scale=scale)
+    val_tfms = create_transform(size, is_training=False)
+
+    train_ds = dataset_func(
+        root=train_data_path,
+        transform=train_tfms,
+        loader=loader,
+        limit_dataset=limit_dataset,
+    )
+    val_ds = dataset_func(
+        root=val_data_path,
+        transform=val_tfms,
+        loader=loader,
+        limit_dataset=limit_dataset,
+    )
+
+    train_loader = DataLoader(
+        dataset=train_ds,
+        batch_size=batch_size,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
+        shuffle=shuffle,
+        drop_last=drop_last,
+        persistent_workers=persistent_workers,
+    )
+    val_loader = DataLoader(
+        dataset=val_ds,
+        batch_size=batch_size,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
+        shuffle=shuffle_val,
+        drop_last=drop_last_val,
+        persistent_workers=persistent_workers,
+    )
+    return DataLoaders(train_loader, val_loader)
+
+
+def dls_timm(
     train_data_path: Union[str, PosixPath],
     val_data_path: Union[str, PosixPath],
     size: int,
@@ -307,7 +390,7 @@ def dls_pytorch_timm(
         fastai dataloaders
     """
 
-    set_image_backend(image_backend)
+    # set_image_backend(image_backend)
     train_tfms = create_transform(size, is_training=True, color_jitter=color_jitter, scale=(0.35, 1.))
     val_tfms = create_transform(size, is_training=False)
 
