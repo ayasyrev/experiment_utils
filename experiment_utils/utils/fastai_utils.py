@@ -3,6 +3,7 @@ from pathlib import PosixPath
 from typing import Callable, List, Union
 
 import hydra
+import jpeg4py
 import numpy as np
 from experiment_utils.utils.hydra_utils import instantiate_model
 from fastai.basics import (CategoryBlock, DataBlock, GrandparentSplitter,
@@ -16,6 +17,7 @@ from fastai.data.core import DataLoaders
 from fastai.vision.all import ImageBlock, Normalize, imagenet_stats
 from fastcore.all import L
 from omegaconf import DictConfig
+from PIL import Image
 from timm.data import ImageDataset, create_transform
 from torch.distributions.beta import Beta
 from torch.utils.data import DataLoader
@@ -24,6 +26,7 @@ from torchvision import transforms as T
 from torchvision.datasets.folder import default_loader
 
 from pt_utils.data.image_folder_dataset import ImageFolderDataset
+from pt_utils.transforms.base_transforms import val_transforms
 
 
 def convert_MP_to_blurMP(model, layer_type_old):
@@ -187,6 +190,10 @@ def get_dataloaders(ds_path, bs, num_workers, item_tfms, batch_tfms: List):
     return dblock.dataloaders(ds_path, path=ds_path, bs=bs, num_workers=num_workers)
 
 
+def loader_jpeg4py(image_path: str) -> object:
+    return Image.fromarray(jpeg4py.JPEG(image_path).decode())
+
+
 def dls_from_pytorch(
     train_data_path: Union[str, PosixPath],
     val_data_path: Union[str, PosixPath],
@@ -309,10 +316,16 @@ def dls_pt_timm(
     Returns:
         fastai dataloaders
     """
-    set_image_backend(image_backend)
+    if image_backend == "jpeg4py":
+        loader = loader_jpeg4py
+    else:
+        set_image_backend(image_backend)
 
+    if color_jitter == 0:
+        color_jitter = None
     train_tfms = create_transform(size, is_training=True, color_jitter=color_jitter, scale=scale)
-    val_tfms = create_transform(size, is_training=False)
+    # val_tfms = create_transform(size, is_training=False)
+    val_tfms = val_transforms(size)
 
     train_ds = dataset_func(
         root=train_data_path,
@@ -392,7 +405,8 @@ def dls_timm(
 
     # set_image_backend(image_backend)
     train_tfms = create_transform(size, is_training=True, color_jitter=color_jitter, scale=(0.35, 1.))
-    val_tfms = create_transform(size, is_training=False)
+    # val_tfms = create_transform(size, is_training=False)
+    val_tfms = val_transforms(size)
 
     train_ds = ImageDataset(root=train_data_path, transform=train_tfms)
 

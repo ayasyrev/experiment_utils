@@ -41,9 +41,9 @@ hydra:
     # dir: /Logs/Hydra/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
     # dir: /Logs/Hydra/run/${data.name}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d}/${now:%H-%M-%S}
     # dir: /Logs/Hydra/${exp}/${now:%Y-%m-%d}/${data.name}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d}/${now:%H-%M-%S}
-    dir: /Logs/Hydra/${exp}/${now:%Y-%m-%d}/${data.name}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d_%H-%M-%S}
+    dir: /Logs/${exp}/${now:%Y-%m-%d}/${data.name}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d_%H-%M-%S}
   sweep:
     # dir: /Logs/Hydra/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
     # dir: /Logs/Hydra/run/${data.name}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d}/${now:%H-%M-%S}
-    dir: /Logs/Hydra/${exp}/${now:%Y-%m-%d}/${data.name}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    dir: /Logs/${exp}/${now:%Y-%m-%d}/${data.name}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d}/${now:%H-%M-%S}
     subdir: ${hydra.job.num}

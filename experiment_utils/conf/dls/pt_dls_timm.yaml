@@ -11,7 +11,7 @@ shuffle: True
 shuffle_val: False
 drop_last: True
 persistent_workers: False
-# color_jitter: None
+color_jitter: 0
 
 limit_dataset: False
 # scale: (0.35, 1.)
