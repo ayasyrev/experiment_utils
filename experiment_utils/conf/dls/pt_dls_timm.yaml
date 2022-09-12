@@ -17,3 +17,6 @@ limit_dataset: False
 # scale: (0.35, 1.)
 
 image_backend: PIL
+
+augmix: False
+num_splits: 2

@@ -18,7 +18,7 @@ from fastai.vision.all import ImageBlock, Normalize, imagenet_stats
 from fastcore.all import L
 from omegaconf import DictConfig
 from PIL import Image
-from timm.data import ImageDataset, create_transform
+from timm.data import ImageDataset, create_transform, AugMixDataset, create_loader
 from torch.distributions.beta import Beta
 from torch.utils.data import DataLoader
 from torchvision import set_image_backend
@@ -292,7 +292,9 @@ def dls_pt_timm(
     drop_last_val: bool = False,
     persistent_workers: bool = False,
     color_jitter: float | None = None,
-    scale: tuple[float, float]= (0.35, 1.),
+    scale: tuple[float, float] = (0.35, 1.),
+    augmix: bool = False,
+    num_splits: int = 2,
 ):
     """Return fastai dataloaders created from pytorch dataloaders.
 
@@ -323,7 +325,7 @@ def dls_pt_timm(
 
     if color_jitter == 0:
         color_jitter = None
-    train_tfms = create_transform(size, is_training=True, color_jitter=color_jitter, scale=scale)
+    train_tfms = create_transform(size, is_training=True, color_jitter=color_jitter, scale=scale, separate=augmix)
     # val_tfms = create_transform(size, is_training=False)
     val_tfms = val_transforms(size)
 
@@ -340,15 +342,30 @@ def dls_pt_timm(
         limit_dataset=limit_dataset,
     )
 
-    train_loader = DataLoader(
-        dataset=train_ds,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        pin_memory=pin_memory,
-        shuffle=shuffle,
-        drop_last=drop_last,
-        persistent_workers=persistent_workers,
-    )
+    if augmix:
+        print("Dataset changet to augmix dataset.")
+        train_ds = AugMixDataset(train_ds, num_splits=num_splits)
+        train_loader = create_loader(
+            dataset=train_ds,
+            is_training=True,
+            input_size=(3, size, size),
+            batch_size=batch_size,
+            scale=scale,
+            ratio=[0.75, 1.33], 
+            num_aug_splits=num_splits,
+            num_workers=num_workers,
+        )
+    else:
+        train_loader = DataLoader(
+            dataset=train_ds,
+            batch_size=batch_size,
+            num_workers=num_workers,
+            pin_memory=pin_memory,
+            shuffle=shuffle,
+            drop_last=drop_last,
+            persistent_workers=persistent_workers,
+        )
+
     val_loader = DataLoader(
         dataset=val_ds,
         batch_size=batch_size,
