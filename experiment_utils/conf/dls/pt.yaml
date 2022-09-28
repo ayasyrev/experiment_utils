@@ -1,0 +1,25 @@
+_target_: pt
+
+train_data_path: ${data.data_dir}/train
+val_data_path: ${data.data_dir}/val
+
+batch_size: ${data.batch_size}
+size: ${data.size}
+num_workers: ${data.dataloader.num_workers}
+pin_memory: False  # True
+shuffle: True
+shuffle_val: False
+drop_last: True
+persistent_workers: False
+
+scale_min: 0.8
+scale_max: 1.
+
+color_jitter: 0
+
+limit_dataset: False
+
+image_backend: PIL
+
+augmix: False
+num_splits: 2

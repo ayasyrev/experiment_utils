@@ -27,6 +27,7 @@ from torchvision.datasets.folder import default_loader
 
 from pt_utils.data.image_folder_dataset import ImageFolderDataset
 from pt_utils.transforms.base_transforms import val_transforms
+from pt_utils.data.dataloader import get_dataloaders as get_dls, DataCfg
 
 
 def convert_MP_to_blurMP(model, layer_type_old):
@@ -292,7 +293,8 @@ def dls_pt_timm(
     drop_last_val: bool = False,
     persistent_workers: bool = False,
     color_jitter: float | None = None,
-    scale: tuple[float, float] = (0.35, 1.),
+    # scale: tuple[float, float] = (0.35, 1.),
+    scale: tuple[float, float] = (0.8, 1.),
     augmix: bool = False,
     num_splits: int = 2,
 ):
@@ -343,7 +345,7 @@ def dls_pt_timm(
     )
 
     if augmix:
-        print("Dataset changet to augmix dataset.")
+        print("Dataset changed to augmix dataset.")
         train_ds = AugMixDataset(train_ds, num_splits=num_splits)
         train_loader = create_loader(
             dataset=train_ds,
@@ -521,7 +523,13 @@ def get_learner(cfg: DictConfig, model=None) -> Learner:
     opt_fn = hydra.utils.call(cfg.opt_fn)
     loss_fn = hydra.utils.instantiate(cfg.loss_fn)
 
-    dls = hydra.utils.instantiate(cfg.dls)
+    if cfg.dls._target_ == "pt":
+        data_cfg = DataCfg(**cfg.dls)
+        train_dl, val_dl = get_dls(data_cfg)
+        print("load dls from cfg.")
+        dls = DataLoaders(train_dl, val_dl)
+    else:
+        dls = hydra.utils.instantiate(cfg.dls)
 
     learn = Learner(
         dls=dls, model=model, opt_func=opt_fn, metrics=[accuracy], loss_func=loss_fn
