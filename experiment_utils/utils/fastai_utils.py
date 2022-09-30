@@ -379,8 +379,7 @@ def dls_pt_timm(
     )
     return DataLoaders(train_loader, val_loader)
 
-
-def dls_timm(
+exp.learn.dls[0]
     train_data_path: Union[str, PosixPath],
     val_data_path: Union[str, PosixPath],
     size: int,

@@ -235,7 +235,7 @@ def stat_runs(runs: List[Run]) -> None:
     print_stat([run.accuracy for run in runs])
 
 
-def get_cfg(path: PathOrStr, flat: bool = False) -> Union[DictConfig, dict, ListConfig]:
+def get_cfg(path: PathOrStr, flat: bool = False, name: str = "cfg") -> Union[DictConfig, dict, ListConfig]:
     """Read cfg from path.
 
     Args:
@@ -245,7 +245,7 @@ def get_cfg(path: PathOrStr, flat: bool = False) -> Union[DictConfig, dict, List
     Returns:
         Union[DictConfig, dict]: return config as OmegaConf DictConfig or as flattened dict.
     """
-    cfg = OmegaConf.load(Path(path) / "cfg.yaml")
+    cfg = OmegaConf.load(Path(path) / f"{name}.yaml")
     cfg.fn = str(path)
     if flat:
         cfg = flat_dict(cfg)

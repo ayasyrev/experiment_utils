@@ -3,10 +3,8 @@ import time
 from pathlib import Path
 from typing import List
 
-import yaml
 from fastai.basics import Learner
-# from omegaconf import DictConfig, OmegaConf
-from pydantic import BaseModel
+from omegaconf import DictConfig, OmegaConf
 
 from experiment_utils.utils.utils import stat
 
@@ -21,47 +19,27 @@ def format_time(seconds: float, long: bool = True) -> str:
     return res
 
 
-class LogCfg(BaseModel):
-    log_dir: str = "log_run"
-    repeat: int = 1
-    date_time: str | None = None  # todo
-    model_save: bool = False
-    model_save_name: str = "model"
-    model_save_opt: bool = False
-    log_loss: bool = True
-    log_lr: bool = True
-
-
 class Logger:
     """Log results"""
 
-    def __init__(self, cfg: LogCfg) -> None:
-        self.cfg = cfg or LogCfg()
+    def __init__(self, cfg: DictConfig) -> None:
+        self.cfg = cfg
+        self.log_dir = Path(cfg.run.log_dir)
+        if self.log_dir.exists() and cfg.run.log_dir != ".":
+            self.log_dir = Path(
+                f"{cfg.run.log_dir}_{time.strftime('%Y-%m-%d_%H-%M-%S')}"
+            )
+        self.log_dir.mkdir(exist_ok=True, parents=True)
+        with open(self.log_dir / "cfg.yaml", "w") as f:
+            f.write(OmegaConf.to_yaml(cfg, resolve=True))
         self.results = []
 
-    def _create_log_dir(self):
-        self.log_dir = Path(self.cfg.log_dir)
-        if self.log_dir.exists() and self.cfg.log_dir != ".":
-            self.log_dir = Path(
-                f"{self.cfg.log_dir}_{time.strftime('%Y-%m-%d_%H-%M-%S')}"
-            )
-            self.cfg.log_dir = str(self.log_dir)
-        self.log_dir.mkdir(exist_ok=True, parents=True)
-
-    def start_run(self, repeat, cfg_to_log):
-        self._create_log_dir()
-        self.repeat = repeat
-        with open(self.log_dir / "cfg.yaml", "w") as f:
-            # f.write(OmegaConf.to_yaml(self.cfg, resolve=True))
-            # f.write(OmegaConf.to_yaml(cfg_to_log.dict()))
-            f.write(yaml.dump(cfg_to_log.dict()))
-
-    def start_job(self, learn: Learner, run_number: int) -> None:
+    def start_job(self, learn: Learner, repeat: int) -> None:
         self.learn = learn
-        self.run_number = run_number
+        self.repeat = repeat
         self.log_model()
         if self.cfg.repeat > 1:
-            print(f"repeat #{run_number + 1} of {self.repeat}")
+            print(f"repeat #{repeat + 1} of {self.cfg.repeat}")
         self.start_time = time.time()
 
     def log_model(self):
@@ -79,30 +57,30 @@ class Logger:
         train_time = time.time() - self.start_time
         print(f"run time: {format_time(train_time)}")
         name_suffix = str(int(round(acc, 4) * 10000))
-        if self.repeat > 1:
-            name_suffix = f"{self.run_number}_{name_suffix}"
+        if self.cfg.repeat > 1:
+            name_suffix = f"{self.repeat}_{name_suffix}"
         self.log_result(name_suffix=name_suffix)
-        if self.cfg.log_loss:
+        if self.cfg.run.log_loss:
             self.log_values(self.learn.recorder.losses, f"losses_{name_suffix}")
         print(50 * "-")
-        if self.cfg.model_save:
+        if self.cfg.model_save.model_save:
             fn = (
                 # f"{self.learn.model._get_name()}_{self.cfg.run.date_time}_{name_suffix}"
-                f"{self.model_name}_{self.cfg.date_time}_{name_suffix}"
-                if self.cfg.model_save_name == "model"
-                else self.cfg.model_save_name
+                f"{self.model_name}_{self.cfg.run.date_time}_{name_suffix}"
+                if self.cfg.model_save.file_name == "model"
+                else self.cfg.model_save.file_name
             )
-            self.learn.save(fn, with_opt=self.cfg.model_save_opt)
+            self.learn.save(fn, with_opt=self.cfg.model_save.with_opt)
             print(f"model saved. {fn}, {Path.cwd()}")
 
     def log_run(self) -> None:
-        if self.cfg.log_lr:
+        if self.cfg.run.log_lr:
             if hasattr(self.learn.recorder, "hps"):
                 for hp in self.learn.recorder.hps:
                     self.log_values(self.learn.recorder.hps[hp], f"{hp}s")
             else:
                 self.log_values(self.learn.recorder.lrs, "lrs")
-        if self.repeat > 1:
+        if self.cfg.repeat > 1:
             self.log_resume()
 
     def log_result(self, file_name: str = "log_res", name_suffix: str = "") -> None:
