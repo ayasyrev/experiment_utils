@@ -1,0 +1,5 @@
+defaults:
+  - default
+
+torch_benchmark: False
+torch_deterministic: True

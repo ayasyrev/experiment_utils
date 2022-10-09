@@ -1,0 +1,99 @@
+defaults: 
+  - seed: deterministic
+  # - data: imagenette-320
+  # - dls: fastai_default
+  # - model: xresnet18
+  # - model_load: no_load
+  # - model_save: no_save
+  # - opt_fn: ranger_fastai
+  # - loss_fn: LabelSmoothingCrossEntropy
+  # - train: fit_anneal
+  - _self_
+
+# exp: exp_noname
+
+# repeat: 1
+
+# run:
+#   log_dir: .
+#   log_lr: true
+#   log_loss: true
+
+#   date_time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
+
+# train:
+#   epochs: 5
+#   lr: 0.008
+#   wd: 0.01
+
+# data:
+#   size: 128
+#   # size: 192
+#   batch_size: 32
+#   dataloader:
+#     num_workers: 4
+
+hydra:
+  run:
+    # dir: /Logs/${name}/${now:%Y-%m-%d}/${data.name}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d_%H-%M-%S}
+    dir: /Logs/${name}/${now:%Y-%m-%d}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d_%H-%M-%S}
+  sweep:
+    dir: /Logs/${name}/${now:%Y-%m-%d}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    # dir: /Logs/${name}/${now:%Y-%m-%d}/${data.name}/${data.size}/ep_${train.epochs}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    subdir: ${hydra.job.num}
+
+
+
+data:
+  batch_size: 64
+  drop_last: true
+  drop_last_val: false
+  image_backend: PIL
+  limit_dataset: false
+  num_workers: 4
+  persistent_workers: false
+  pin_memory: true
+  scale_max: 1.0
+  scale_min: 0.8
+  shuffle: true
+  shuffle_val: false
+  size: 224
+  train_data_path: /Data/imagenette2-320/train/
+  train_tfms: null
+  val_data_path: /Data/imagenette2-320/val/
+  val_tfms: null
+log:
+  date_time: null
+  log_dir: log_run_2022-09-30_16-57-29
+  log_loss: true
+  log_lr: true
+  model_save: false
+  model_save_name: model
+  model_save_opt: false
+  repeat: 1
+loss_func: LabelSmoothingCrossEntropy
+model:
+  name: xresnet18
+  path: experiment_utils.models.xresnet
+name: no_name
+opt_func: ranger
+repeat: 1
+seed: 
+  SEED_NUM: 42
+  seed_numpy: true
+  seed_pythonhash: true
+  seed_random: true
+  seed_torch: true
+  torch_benchmark: true
+  torch_deterministic: false
+train:
+  anneal_div: 100000.0
+  anneal_pct: 0.75
+  anneal_type: cos
+  epochs: 5
+  lr: 0.008
+  warmup_div: 100.0
+  warmup_pct: 0.01
+  warmup_type: lin
+  wd: 0.01
+train_func: fit_warmup_anneal

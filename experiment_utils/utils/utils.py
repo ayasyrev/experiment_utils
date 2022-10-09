@@ -6,6 +6,7 @@ from typing import List, Optional, Tuple, Union
 import numpy as np
 import torch
 from omegaconf import DictConfig, OmegaConf
+from pydantic import BaseModel
 from rich import print
 
 
@@ -23,8 +24,7 @@ def print_stat(results: List[float]) -> None:
     )
 
 
-@dataclass
-class Cfg_Seed:
+class SeedCfg(BaseModel):
     SEED_NUM: int = 42
     seed_pythonhash: bool = True
     seed_random: bool = True
@@ -35,7 +35,7 @@ class Cfg_Seed:
 
 
 def set_seed(
-    cfg: Optional[Union[Cfg_Seed, DictConfig]] = None,
+    cfg: Optional[Union[SeedCfg, DictConfig]] = None,
     SEED_NUM: int = 42,
     seed_pythonhash: bool = True,
     seed_random: bool = True,
@@ -50,7 +50,15 @@ def set_seed(
     """
     # kwargs for compatibility with hydra.utils.call - can remove later.
     if cfg is None:
-        cfg = Cfg_Seed(SEED_NUM, seed_pythonhash, seed_random, seed_numpy, seed_torch, torch_benchmark, torch_deterministic)
+        cfg = SeedCfg(
+            SEED_NUM=SEED_NUM,
+            seed_pythonhash=seed_pythonhash,
+            seed_random=seed_random,
+            seed_numpy=seed_numpy,
+            seed_torch=seed_torch,
+            torch_benchmark=torch_benchmark,
+            torch_deterministic=torch_deterministic,
+        )
     if cfg.seed_pythonhash:
         os.environ["PYTHONHASHSEED"] = str(cfg.SEED_NUM)
     if cfg.seed_random:

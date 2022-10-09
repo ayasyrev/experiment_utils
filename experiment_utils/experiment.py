@@ -1,6 +1,7 @@
+from functools import partial
 from typing import Any, Callable
 
-import hydra
+# import hydra
 import torch
 from fastai.basics import Learner, accuracy
 from fastai.data.core import DataLoaders
@@ -12,7 +13,9 @@ from pydantic import BaseModel
 from experiment_utils.logger import Logger
 from experiment_utils.utils.import_utils import FuncCfg, load_obj, load_obj_partial, load_obj_run
 from experiment_utils.utils.model_utils import load_model_state
-from experiment_utils.utils.utils import Cfg_Seed, set_seed
+from experiment_utils.utils.utils import SeedCfg, set_seed
+from .exp_defaults import loss_func_dict, opt_func_dict, train_func_dict
+from .models import models_dict
 
 from .logger import LogCfg
 
@@ -22,9 +25,9 @@ class ModelCfg(FuncCfg):
     path: str | None = "experiment_utils.models.xresnet"
 
 
-class FitWarmupAnneal(FuncCfg):
-    name: str = "fit_warmup_anneal"
-    path: str = "experiment_utils.utils.fastai_utils"
+class FitWarmupAnneal(BaseModel):
+    # name: str = "fit_warmup_anneal"
+    # path: str = "experiment_utils.utils.fastai_utils"
     epochs: int = 5
     lr: float = 0.008
     wd: float = 0.01
@@ -37,14 +40,14 @@ class FitWarmupAnneal(FuncCfg):
 
 
 class ExpCfg(BaseModel):
-    seed: Cfg_Seed = Cfg_Seed()
+    seed: SeedCfg = SeedCfg()
     data: DataCfg = DataCfg()
     model: ModelCfg = ModelCfg()
     # dls = ""
-    opt_func: FuncCfg = FuncCfg(name="ranger", path="fastai.basics")
-    loss_func: FuncCfg = FuncCfg(name="LabelSmoothingCrossEntropy", path="fastai.losses")
-    train = ""
-    train_func: FuncCfg = FitWarmupAnneal()
+    opt_func: str = "ranger"
+    loss_func: str = "LabelSmoothingCrossEntropy"
+    train: FitWarmupAnneal = FitWarmupAnneal()
+    train_func: str = "fit_warmup_anneal"
     log = LogCfg()
     name: str = "no_name"
     repeat: int = 1  # to train?
@@ -80,7 +83,7 @@ class Experiment:
         self.logger.log_run()
 
     def set_model(self):
-        self.model = load_obj(self.cfg.model)()
+        self.model = models_dict[self.cfg.model.name]()
         # if self.cfg.model_load:
         #     pass
 
@@ -94,13 +97,15 @@ class Experiment:
         self._set_learner()
 
     def set_opt(self):
-        self.opt_func = load_obj(self.cfg.opt_func)
+        self.opt_func = opt_func_dict[self.cfg.opt_func]
 
     def set_loss_func(self):
-        self.loss_func = load_obj_run(self.cfg.loss_func)
+        self.loss_func = loss_func_dict[self.cfg.loss_func]()
 
     def set_train_func(self):
-        self.train_func = load_obj_partial(self.cfg.train_func)
+        self.train_func = partial(
+            train_func_dict[self.cfg.train_func],
+            **self.cfg.train.dict())
 
     def _set_learner(self) -> None:
         """create fastai Learner"""
