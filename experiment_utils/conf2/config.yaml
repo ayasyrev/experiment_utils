@@ -1,37 +1,7 @@
-defaults: 
-  - seed: deterministic
-  # - data: imagenette-320
-  # - dls: fastai_default
-  # - model: xresnet18
-  # - model_load: no_load
-  # - model_save: no_save
-  # - opt_fn: ranger_fastai
-  # - loss_fn: LabelSmoothingCrossEntropy
-  # - train: fit_anneal
-  - _self_
+# defaults: 
+#   - seed: deterministic
 
-# exp: exp_noname
-
-# repeat: 1
-
-# run:
-#   log_dir: .
-#   log_lr: true
-#   log_loss: true
-
-#   date_time: ${now:%Y-%m-%d}_${now:%H-%M-%S}
-
-# train:
-#   epochs: 5
-#   lr: 0.008
-#   wd: 0.01
-
-# data:
-#   size: 128
-#   # size: 192
-#   batch_size: 32
-#   dataloader:
-#     num_workers: 4
+name: resnet18
 
 hydra:
   run:
@@ -45,10 +15,11 @@ hydra:
 
 
 data:
-  batch_size: 64
+  batch_size: 32
   drop_last: true
   drop_last_val: false
-  image_backend: PIL
+  # image_backend: PIL
+  image_backend: accimage
   limit_dataset: false
   num_workers: 4
   persistent_workers: false
@@ -57,7 +28,8 @@ data:
   scale_min: 0.8
   shuffle: true
   shuffle_val: false
-  size: 224
+  size: 128
+  extra_size: 24
   train_data_path: /Data/imagenette2-320/train/
   train_tfms: null
   val_data_path: /Data/imagenette2-320/val/
@@ -75,9 +47,10 @@ loss_func: LabelSmoothingCrossEntropy
 model:
   name: xresnet18
   path: experiment_utils.models.xresnet
-name: no_name
+  weight_path: /Data/model_weights/xresnext18_weight_0
+# name: no_name
 opt_func: ranger
-repeat: 1
+repeat: 5
 seed: 
   SEED_NUM: 42
   seed_numpy: true
@@ -86,14 +59,17 @@ seed:
   seed_torch: true
   torch_benchmark: true
   torch_deterministic: false
+  # torch_benchmark: false
+  # torch_deterministic: true
 train:
   anneal_div: 100000.0
   anneal_pct: 0.75
   anneal_type: cos
-  epochs: 5
+  epochs: 20
   lr: 0.008
   warmup_div: 100.0
-  warmup_pct: 0.01
+  # warmup_pct: 0.01
+  warmup_pct: 0.0
   warmup_type: lin
   wd: 0.01
 train_func: fit_warmup_anneal

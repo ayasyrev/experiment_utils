@@ -2,10 +2,9 @@ import warnings
 
 import hydra
 from fastprogress import fastprogress
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 
 from experiment_utils.experiment import ExpCfg, Experiment
-from experiment_utils.utils.utils import SeedCfg
 
 fastprogress.MAX_COLS = 80
 warnings.filterwarnings("ignore")
@@ -15,12 +14,12 @@ warnings.filterwarnings("ignore")
 def train(cfg: DictConfig) -> None:
 
     # print(OmegaConf.to_yaml(cfg))
-    cfg = ExpCfg(**cfg)
+    exp_cfg = ExpCfg(**cfg)
     # print(cfg.seed)
     # cfg_seed = Cfg_Seed(**cfg.seed)
     # print(cfg_seed)
     # print(cfg)
-    exp = Experiment(cfg)
+    exp = Experiment(exp_cfg)
     exp.run()
 
 

@@ -60,7 +60,7 @@ class Logger:
         self.learn = learn
         self.run_number = run_number
         self.log_model()
-        if self.cfg.repeat > 1:
+        if self.repeat > 1:
             print(f"repeat #{run_number + 1} of {self.repeat}")
         self.start_time = time.time()
 

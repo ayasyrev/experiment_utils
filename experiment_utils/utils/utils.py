@@ -1,6 +1,5 @@
 import os
 import random
-from dataclasses import dataclass
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
@@ -45,7 +44,7 @@ def set_seed(
     torch_deterministic: bool = False,
     **kwargs,
 ) -> None:
-    """Set seeds. Use with cfg or arguments. If cfg is used - arguments ignorings.
+    """Set seeds. Use with cfg or arguments. If cfg is used - arguments ignoring.
         TODO: check https://pytorch.org/docs/stable/notes/randomness.html?highlight=deterministic
     """
     # kwargs for compatibility with hydra.utils.call - can remove later.

@@ -11,8 +11,8 @@ from pt_utils.data.dataloader import get_dataloaders
 from pydantic import BaseModel
 
 from experiment_utils.logger import Logger
-from experiment_utils.utils.import_utils import FuncCfg, load_obj, load_obj_partial, load_obj_run
-from experiment_utils.utils.model_utils import load_model_state
+from experiment_utils.utils.import_utils import FuncCfg
+# from experiment_utils.utils.model_utils import load_model_state
 from experiment_utils.utils.utils import SeedCfg, set_seed
 from .exp_defaults import loss_func_dict, opt_func_dict, train_func_dict
 from .models import models_dict
@@ -23,6 +23,7 @@ from .logger import LogCfg
 class ModelCfg(FuncCfg):
     name: str = "xresnet18"
     path: str | None = "experiment_utils.models.xresnet"
+    weight_path: str | None = None
 
 
 class FitWarmupAnneal(BaseModel):
@@ -84,8 +85,8 @@ class Experiment:
 
     def set_model(self):
         self.model = models_dict[self.cfg.model.name]()
-        # if self.cfg.model_load:
-        #     pass
+        if self.cfg.model.weight_path is not None:
+            self.model.load_state_dict(torch.load(f"{self.cfg.model.weight_path}.pt"))
 
     def set_learner(self):
         if self.model is None:
