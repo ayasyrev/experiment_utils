@@ -12,6 +12,7 @@ from pydantic import BaseModel
 
 from experiment_utils.logger import Logger
 from experiment_utils.utils.import_utils import FuncCfg
+from experiment_utils.utils.fastai_utils import create_learner
 # from experiment_utils.utils.model_utils import load_model_state
 from experiment_utils.utils.utils import SeedCfg, set_seed
 from .exp_defaults import loss_func_dict, opt_func_dict, train_func_dict
@@ -95,7 +96,8 @@ class Experiment:
             self.set_opt()
         if self.loss_func is None:
             self.set_loss_func()
-        self._set_learner()
+        dls = get_dataloaders(self.cfg.data)
+        self.learn = create_learner(dls, self.model, self.opt_func, self.metrics, self.loss_func, self.cfg)
 
     def set_opt(self):
         self.opt_func = opt_func_dict[self.cfg.opt_func]
@@ -108,12 +110,4 @@ class Experiment:
             train_func_dict[self.cfg.train_func],
             **self.cfg.train.dict())
 
-    def _set_learner(self) -> None:
-        """create fastai Learner"""
-        self.learn = Learner(
-            dls=DataLoaders(*get_dataloaders(self.cfg.data)),
-            model=self.model,
-            opt_func=self.opt_func,
-            metrics=self.metrics,
-            loss_func=self.loss_func
-        )
+

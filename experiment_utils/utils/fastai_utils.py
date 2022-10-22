@@ -1,16 +1,19 @@
+import os
 from functools import partial
-from pathlib import PosixPath
+from pathlib import Path, PosixPath
 from typing import Callable, List, Union
 
 import hydra
 import jpeg4py
 import numpy as np
+import torch
 from experiment_utils.utils.hydra_utils import instantiate_model
 from fastai.basics import (CategoryBlock, DataBlock, GrandparentSplitter,
                            Learner, accuracy, get_image_files, parent_label,
                            tensor)
-from fastai.callback.all import (Callback, MixUp, ParamScheduler, SchedCos,
-                                 SchedLin, SchedPoly, combine_scheds)
+from fastai.callback.all import (Callback, CSVLogger, MixUp,  # ChannelsLast,
+                                 ParamScheduler, SchedCos, SchedLin, SchedPoly,
+                                 combine_scheds)
 from fastai.callback.schedule import (  # noqa F401 import lr_find for patch Learner
     SuggestionMethod, lr_find)
 from fastai.data.core import DataLoaders
@@ -18,16 +21,18 @@ from fastai.vision.all import ImageBlock, Normalize, imagenet_stats
 from fastcore.all import L
 from omegaconf import DictConfig
 from PIL import Image
-from timm.data import ImageDataset, create_transform, AugMixDataset, create_loader
+from timm.data import (AugMixDataset, ImageDataset, create_loader,
+                       create_transform)
 from torch.distributions.beta import Beta
 from torch.utils.data import DataLoader
 from torchvision import set_image_backend
 from torchvision import transforms as T
 from torchvision.datasets.folder import default_loader
 
+from pt_utils.data.dataloader import DataCfg
+from pt_utils.data.dataloader import get_dataloaders as get_dls
 from pt_utils.data.image_folder_dataset import ImageFolderDataset
 from pt_utils.transforms.base_transforms import val_transforms
-from pt_utils.data.dataloader import get_dataloaders as get_dls, DataCfg
 
 
 def convert_MP_to_blurMP(model, layer_type_old):
@@ -537,4 +542,33 @@ def get_learner(cfg: DictConfig, model=None) -> Learner:
 
     # if cfg.model_load.model_load:
     #     learn.load(file=cfg.model_load.file_name, with_opt=cfg.model_load.with_opt)
+    return learn
+
+
+class ChannelsLast(Callback):
+    def before_fit(self):
+        self.learn.model = self.model.to(memory_format=torch.channels_last)
+
+    def before_batch(self):
+        self.xb = self.x.to(memory_format=torch.channels_last), self.y
+
+
+def create_learner(dls, model, opt_func, metrics, loss_func, cfg, cbs=None,):
+    """create fastai Learner"""
+    dls = DataLoaders(*dls)
+    # print("learner stuf")
+    path = Path().cwd()
+    # print(path)
+    def_cbs = [CSVLogger(fname=f"{path}/hist.csv")]
+    if cfg.data.channels_last:
+        print("use channels_last")
+        def_cbs.append(ChannelsLast())
+    learn = Learner(
+        dls=dls,  #DataLoaders(*get_dataloaders(self.cfg.data)),
+        model=model,
+        opt_func=opt_func,
+        metrics=metrics,
+        loss_func=loss_func,
+        cbs=def_cbs,
+    )
     return learn
